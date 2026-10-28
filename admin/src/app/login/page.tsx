@@ -182,7 +182,6 @@ export default function Login() {
               className="portal-artwork-bg"
               priority
             />
-            <div className="portal-artwork-vignette" aria-hidden="true" />
             <div className="portal-brand-logo-wrap">
               <Image
                 src="/admin-logo-transparent.png"
