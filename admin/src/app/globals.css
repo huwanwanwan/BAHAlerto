@@ -1613,23 +1613,31 @@ textarea:focus-visible {
 
 @media (max-width: 740px) {
   .login-portal {
-    padding: 28px 18px 65px;
+    padding: 24px 16px 48px;
     --flood-card-w: 210px;
     --flood-card-h: 270px;
     --flood-gap: 4px;
   }
   .portal-card {
     grid-template-columns: 1fr;
-    max-width: 480px;
+    max-width: 440px;
     margin-inline: auto;
   }
   .portal-brand.portal-artwork {
-    aspect-ratio: 971 / 1619;
+    aspect-ratio: 16 / 10;
+    max-height: 240px;
     height: auto;
     min-height: 0;
   }
+  .portal-brand-logo-wrap {
+    padding: 20px 16px;
+  }
+  .portal-brand-logo-img {
+    width: 65%;
+    max-width: 220px;
+  }
   .portal-content {
-    padding: 36px 30px 40px;
+    padding: 28px 24px 32px;
   }
 }
 
