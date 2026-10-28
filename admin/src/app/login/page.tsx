@@ -175,17 +175,13 @@ export default function Login() {
         <section className="portal-card" aria-labelledby="login-title">
           <div className="portal-brand portal-artwork">
             <Image
-              src="/flood-photos/ph-flood-01.webp"
-              alt="Marilao Municipal Operations Center"
+              src="/login-brand-generated.jpg"
+              alt="BAHAlerto flood monitoring landscape"
               fill
               sizes="(max-width: 740px) 100vw, 378px"
               className="portal-artwork-bg"
               priority
             />
-            {/* Luminous sunburst light & bloom behind logo to ensure high visibility */}
-            <div className="portal-brand-light" aria-hidden="true" />
-            <div className="portal-brand-light-bloom" aria-hidden="true" />
-            <div className="portal-brand-light-beam" aria-hidden="true" />
             <div className="portal-brand-logo-wrap">
               <Image
                 src="/admin-logo-transparent.png"
