@@ -178,12 +178,24 @@ export default function Login() {
         <section className="portal-card" aria-labelledby="login-title">
           <div className="portal-brand portal-artwork">
             <Image
-              src="/login-logov3-centered.png"
-              alt="BAHAlerto Admin - flood awareness landscape"
+              src="/flood-photos/ph-flood-0.webp"
+              alt="Marilao Disaster Operations Center"
               fill
               sizes="(max-width: 740px) 100vw, 378px"
+              className="portal-artwork-bg"
               priority
             />
+            <div className="portal-artwork-tint" aria-hidden="true" />
+            <div className="portal-brand-logo-wrap">
+              <Image
+                src="/admin-logo-transparent.png"
+                alt="BAHAlerto Admin"
+                width={290}
+                height={240}
+                className="portal-brand-logo-img"
+                priority
+              />
+            </div>
           </div>
           <div className="portal-content">
             <h1 id="login-title">Login Portal</h1>
