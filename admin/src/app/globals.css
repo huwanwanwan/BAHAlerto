@@ -1354,33 +1354,255 @@ textarea:focus-visible {
   -webkit-text-fill-color: var(--green);
 }
 
-/* Mint login backdrop, full-artwork framing and centered card. */
+/* ==========================================================================
+   BAHAlerto Admin Login - Tilted Philippine Flood Photo Collage Backdrop
+   ========================================================================== */
+
 .login-portal {
-  min-height:100svh;
-  padding:76px 28px;
-  background:
-    radial-gradient(ellipse at 50% 46%, rgba(250,253,251,.98) 0%, rgba(248,252,249,.55) 42%, transparent 80%),
-    linear-gradient(135deg,#FAFDFB 0%,#EFF8F2 55%,#E5F3E9 100%);
+  position: relative;
+  min-height: 100svh;
+  width: 100%;
+  max-width: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 56px 24px;
+  background: #0f2c1f;
 }
-.login-frame {position:relative;width:100%;max-width:900px;}
+
+/* Slanted / Tilted Collage Container (matching the video's tilted card grid) */
+.flood-collage-backdrop {
+  position: absolute;
+  inset: -35% -30%;
+  pointer-events: none;
+  overflow: hidden;
+  transform: rotate(-13deg) scale(1.12);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 0;
+  opacity: 0.65;
+}
+
+.flood-collage-grid {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  height: 220%;
+  width: 100%;
+}
+
+.flood-collage-col {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 240px;
+  flex-shrink: 0;
+}
+
+/* Alternating gentle vertical drift */
+.flood-collage-col.col-0 {
+  transform: translateY(-40px);
+  animation: collage-drift-up 65s linear infinite;
+}
+.flood-collage-col.col-1 {
+  transform: translateY(50px);
+  animation: collage-drift-down 65s linear infinite;
+}
+.flood-collage-col.col-2 {
+  transform: translateY(-80px);
+  animation: collage-drift-up 65s linear infinite;
+}
+.flood-collage-col.col-3 {
+  transform: translateY(30px);
+  animation: collage-drift-down 65s linear infinite;
+}
+
+@keyframes collage-drift-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+@keyframes collage-drift-down {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+
+/* Rounded photo cards with shadow and glass pill badges */
+.flood-photo-card {
+  position: relative;
+  width: 240px;
+  height: 330px;
+  border-radius: 18px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 16px 36px -6px rgba(0, 20, 12, 0.40), 0 4px 14px rgba(0, 0, 0, 0.20);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: #143d2b;
+}
+
+.flood-photo-img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.flood-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 52%, rgba(2, 28, 17, 0.82) 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 14px 12px;
+}
+
+.flood-card-pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #ffffff;
+  background: rgba(0, 36, 22, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Gentle radial veil layer for high contrast and comfortable text reading */
+.flood-collage-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 68% 58% at 50% 50%,
+    rgba(255, 255, 255, 0.84) 0%,
+    rgba(246, 252, 248, 0.89) 45%,
+    rgba(230, 245, 236, 0.95) 100%
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 1;
+}
+
+/* Centered Login Frame & Card (z-index: 2 sits clearly above the backdrop) */
+.login-frame {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+}
+
 .portal-card {
-  width:100%;max-width:none;min-height:0;
-  grid-template-columns:42% 58%;border-radius:18px;
-  border:1px solid rgba(200,222,207,.65);
-  box-shadow:0 20px 60px rgba(31,79,48,.10),0 4px 14px rgba(31,79,48,.05);
-  animation:none;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 42% 58%;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid rgba(195, 222, 204, 0.70);
+  box-shadow:
+    0 24px 64px -10px rgba(0, 32, 20, 0.18),
+    0 8px 24px -4px rgba(0, 32, 20, 0.08);
+  overflow: hidden;
+  animation: none;
 }
-.portal-brand.portal-artwork {height:auto;min-height:0;aspect-ratio:971 / 1619;}
-.portal-artwork img {object-fit:contain;object-position:center;}
-.portal-content {padding:56px clamp(30px,5vw,64px);background:#fff;}
-.portal-setup {position:absolute;top:100%;left:0;right:0;margin-top:20px;}
-@media(max-width:740px){
-  .login-portal{padding:28px 20px 70px;}
-  .portal-card{grid-template-columns:1fr;max-width:520px;margin-inline:auto;}
-  .portal-brand.portal-artwork{aspect-ratio:971 / 1619;height:auto;min-height:0;}
-  .portal-content{padding:36px 30px 40px;}
+
+.portal-brand.portal-artwork {
+  position: relative;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 971 / 1619;
+  background: #005c38;
 }
-@media(max-width:400px){.login-portal{padding-inline:14px}.portal-content{padding-inline:24px}}
+
+.portal-artwork img {
+  object-fit: contain;
+  object-position: center;
+}
+
+.portal-content {
+  padding: 56px clamp(32px, 5vw, 64px);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.portal-setup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 18px;
+  font-size: 14px;
+  text-align: center;
+  color: #557262;
+}
+
+.portal-setup a {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.portal-setup a:hover {
+  text-decoration: underline;
+}
+
+/* Responsiveness across Mobile, Tablet, and Desktop */
+@media (max-width: 1100px) {
+  .flood-collage-col.col-3 {
+    display: none;
+  }
+}
+
+@media (max-width: 740px) {
+  .login-portal {
+    padding: 28px 18px 65px;
+  }
+  .flood-collage-backdrop {
+    opacity: 0.50;
+  }
+  .flood-collage-col.col-2,
+  .flood-collage-col.col-3 {
+    display: none;
+  }
+  .portal-card {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+  .portal-brand.portal-artwork {
+    aspect-ratio: 971 / 1619;
+    height: auto;
+    min-height: 0;
+  }
+  .portal-content {
+    padding: 36px 30px 40px;
+  }
+}
+
+@media (max-width: 420px) {
+  .login-portal {
+    padding-inline: 14px;
+  }
+  .portal-content {
+    padding-inline: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flood-collage-col {
+    animation: none !important;
+  }
+}
 
 /* Readable admin sizing across modules and shared controls. */
 nav a {min-height:48px;white-space:normal;line-height:1.45;}
