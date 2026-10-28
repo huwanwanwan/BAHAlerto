@@ -1369,18 +1369,18 @@ textarea:focus-visible {
   justify-content: center;
   align-items: center;
   padding: 56px 24px;
-  background: #05140d;
+  background: #0d271c;
 }
 
 /*
  * Oversized, tilted backdrop. Columns are clipped by this element, never by
  * themselves, so cards can't "vanish" at a column edge.
- * Rotated right (clockwise 14deg) with dark tone and smooth cinematic blur.
+ * Rotated right (clockwise 14deg) with natural visible colors and subtle soft blur.
  */
 .login-portal {
   --flood-card-w: 360px;
   --flood-card-h: 460px;
-  --flood-gap: 6px;
+  --flood-gap: 8px;
 }
 
 .flood-collage-backdrop {
@@ -1397,7 +1397,7 @@ textarea:focus-visible {
   align-items: flex-start;
   gap: var(--flood-gap);
   z-index: 0;
-  filter: blur(3px) brightness(0.52) contrast(1.10);
+  filter: blur(2.5px) brightness(0.82) contrast(1.05);
 }
 
 /* Column = two identical tracks with no gap between them.
@@ -1444,7 +1444,7 @@ textarea:focus-visible {
   }
 }
 
-/* Large borderless photo cards with dark foundation and soft drop-shadow */
+/* Large borderless photo cards with natural tone and soft drop-shadow */
 .flood-photo-card {
   position: relative;
   width: var(--flood-card-w);
@@ -1453,8 +1453,8 @@ textarea:focus-visible {
   overflow: hidden;
   flex-shrink: 0;
   border: none;
-  background: #061910;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  background: #0d271c;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .flood-photo-img {
@@ -1467,9 +1467,9 @@ textarea:focus-visible {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(2, 14, 9, 0.30) 0%,
-    rgba(2, 12, 8, 0.15) 45%,
-    rgba(1, 8, 5, 0.88) 100%
+    rgba(0, 0, 0, 0.08) 0%,
+    transparent 45%,
+    rgba(4, 24, 15, 0.65) 100%
   );
   display: flex;
   align-items: flex-end;
@@ -1480,37 +1480,38 @@ textarea:focus-visible {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: rgba(255, 255, 255, 0.92);
-  background: rgba(2, 18, 11, 0.82);
+  color: #ffffff;
+  background: rgba(3, 35, 22, 0.82);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 6px 12px;
   border-radius: 12px;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.40);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
 
-/* Darker vignette veil with backdrop blur to strongly emphasize the login card */
+/* Soft luminous backlight veil spotlighting the center login card while keeping background photos colorful */
 .flood-collage-veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 65% 58% at 50% 50%,
-    rgba(4, 20, 13, 0.58) 0%,
-    rgba(3, 14, 9, 0.74) 48%,
-    rgba(2, 8, 5, 0.90) 100%
+    ellipse 62% 56% at 50% 50%,
+    rgba(240, 248, 243, 0.40) 0%,
+    rgba(225, 242, 232, 0.22) 36%,
+    rgba(10, 36, 25, 0.32) 68%,
+    rgba(6, 24, 16, 0.58) 100%
   );
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 1;
 }
 
-/* Centered Login Frame & Card (z-index: 2 sits clearly above the backdrop) */
+/* Centered Login Frame & Card (highlighted with glowing elevation and crisp border) */
 .login-frame {
   position: relative;
   z-index: 2;
@@ -1526,11 +1527,13 @@ textarea:focus-visible {
   display: grid;
   grid-template-columns: 42% 58%;
   background: #ffffff;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow:
-    0 28px 84px -10px rgba(0, 0, 0, 0.65),
-    0 12px 36px -4px rgba(0, 0, 0, 0.35);
+    0 0 0 1px rgba(7, 132, 67, 0.12),
+    0 0 40px rgba(255, 255, 255, 0.40),
+    0 28px 84px -12px rgba(0, 25, 15, 0.40),
+    0 12px 32px -4px rgba(0, 25, 15, 0.20);
   overflow: hidden;
   animation: none;
 }
@@ -1564,11 +1567,12 @@ textarea:focus-visible {
   margin-top: 18px;
   font-size: 14px;
   text-align: center;
-  color: #9cb5a6;
+  color: #e2f0e7;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
 .portal-setup a {
-  color: #34d399;
+  color: #4ade80;
   font-weight: 600;
 }
 
