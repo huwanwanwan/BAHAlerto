@@ -3,8 +3,8 @@ import Image from "next/image";
 import { LoginForm } from "@/components/login-form";
 import { configured } from "@/lib/supabase";
 
-const floodCards = [
-  // Column 1
+const floodColumns = [
+  // Col 0 - River Gauges & Controls
   [
     {
       src: "/flood-photos/ph-flood-1.jpg",
@@ -22,7 +22,7 @@ const floodCards = [
       title: "Marilao Road Inundation",
     },
   ],
-  // Column 2
+  // Col 1 - Rescue & Civil Defense
   [
     {
       src: "/flood-photos/ph-flood-5.jpg",
@@ -40,7 +40,7 @@ const floodCards = [
       title: "Emergency Medical Relief",
     },
   ],
-  // Column 3
+  // Col 2 - Typhoon Inundation & Pumping Stations
   [
     {
       src: "/flood-photos/ph-flood-8.jpg",
@@ -58,22 +58,58 @@ const floodCards = [
       title: "Hydrological Monitoring",
     },
   ],
-  // Column 4
+  // Col 3 - Bulacan & Pampanga Waterways
   [
     {
-      src: "/flood-photos/ph-flood-6.jpg",
-      alt: "Rescue operations",
-      title: "Civil Defense Operations",
+      src: "/flood-photos/ph-flood-9.jpg",
+      alt: "Tidal flooding in Marilao, Bulacan",
+      title: "MacArthur Highway Inundation",
     },
     {
       src: "/flood-photos/ph-flood-1.jpg",
-      alt: "Water level gauge",
+      alt: "Marikina River monitoring station",
       title: "River Crest Warning",
     },
     {
+      src: "/flood-photos/ph-flood-6.jpg",
+      alt: "Civil defense flood rescue",
+      title: "Civil Defense Operations",
+    },
+  ],
+  // Col 4 - Waterways & Medical Relief
+  [
+    {
+      src: "/flood-photos/ph-flood-2.jpg",
+      alt: "Pasig-Marikina River Channel Esplanade",
+      title: "Pasig Flood Control",
+    },
+    {
+      src: "/flood-photos/ph-flood-7.jpg",
+      alt: "Medical relief operations in Manila",
+      title: "Community Relief Operations",
+    },
+    {
+      src: "/flood-photos/ph-flood-8.jpg",
+      alt: "Floodwaters in Central Luzon",
+      title: "Pampanga Basin Floodway",
+    },
+  ],
+  // Col 5 - Outer wide screen balance
+  [
+    {
+      src: "/flood-photos/ph-flood-4.jpg",
+      alt: "Flood channel improvement",
+      title: "Floodway Channel Control",
+    },
+    {
       src: "/flood-photos/ph-flood-5.jpg",
-      alt: "Evacuation transport",
-      title: "Evacuation Support",
+      alt: "Resident evacuation during typhoon flood",
+      title: "Evacuation Operations",
+    },
+    {
+      src: "/flood-photos/ph-flood-3.jpg",
+      alt: "River gate infrastructure",
+      title: "Pumping Gate Controls",
     },
   ],
 ];
@@ -84,28 +120,48 @@ export default function Login() {
       {/* Tilted / Slanted Philippine Flood Photo Card Collage (matching video template) */}
       <div className="flood-collage-backdrop" aria-hidden="true">
         <div className="flood-collage-grid">
-          {floodCards.map((col, colIdx) => (
+          {floodColumns.map((col, colIdx) => (
             <div key={colIdx} className={`flood-collage-col col-${colIdx}`}>
-              {[...col, ...col].map((card, cardIdx) => (
-                <div key={cardIdx} className="flood-photo-card">
-                  <Image
-                    src={card.src}
-                    alt={card.alt}
-                    fill
-                    sizes="250px"
-                    className="flood-photo-img"
-                  />
-                  <div className="flood-card-overlay">
-                    <span className="flood-card-pill">{card.title}</span>
+              {/* Track 1 */}
+              <div className="flood-track flood-track-1">
+                {col.map((card, cardIdx) => (
+                  <div key={cardIdx} className="flood-photo-card">
+                    <Image
+                      src={card.src}
+                      alt={card.alt}
+                      fill
+                      sizes="280px"
+                      className="flood-photo-img"
+                    />
+                    <div className="flood-card-overlay">
+                      <span className="flood-card-pill">{card.title}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              {/* Track 2 (identically repeated for 100% seamless infinite loop) */}
+              <div className="flood-track flood-track-2" aria-hidden="true">
+                {col.map((card, cardIdx) => (
+                  <div key={cardIdx} className="flood-photo-card">
+                    <Image
+                      src={card.src}
+                      alt={card.alt}
+                      fill
+                      sizes="280px"
+                      className="flood-photo-img"
+                    />
+                    <div className="flood-card-overlay">
+                      <span className="flood-card-pill">{card.title}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Gentle gradient veil so the login card has high contrast and zero eye strain */}
+      {/* Gentle center backlight veil so the login card has high contrast without obscuring the background */}
       <div className="flood-collage-veil" aria-hidden="true" />
 
       {/* Centered Login Card */}
