@@ -1,0 +1,1 @@
+{"version":"0.2.0","configurations":[{"name":"BAHAlerto • Edge","cwd":"${workspaceFolder}/mobile","request":"launch","type":"dart","deviceId":"edge"},{"name":"BAHAlerto • Chrome","cwd":"${workspaceFolder}/mobile","request":"launch","type":"dart","deviceId":"chrome"}]}

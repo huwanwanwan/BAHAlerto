@@ -1,0 +1,19 @@
+# Tooling and dependencies
+.tools/
+node_modules/
+.next/
+.dart_tool/
+build/
+**/.flutter-plugins-dependencies
+**/ephemeral/
+
+# Secrets and environment configs
+.env*
+!.env.example
+
+# Logs and build caches
+*.log
+*.tsbuildinfo
+test-results/
+playwright-report/
+
