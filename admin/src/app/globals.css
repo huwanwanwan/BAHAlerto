@@ -1369,94 +1369,92 @@ textarea:focus-visible {
   justify-content: center;
   align-items: center;
   padding: 56px 24px;
-  background: #0b2419;
+  background: #05140d;
 }
 
-/* Wide slanted container filling the entire viewport beyond all 4 screen edges */
+/*
+ * Oversized, tilted backdrop. Columns are clipped by this element, never by
+ * themselves, so cards can't "vanish" at a column edge.
+ * Rotated right (clockwise 14deg) with dark tone and smooth cinematic blur.
+ */
+.login-portal {
+  --flood-card-w: 360px;
+  --flood-card-h: 460px;
+  --flood-gap: 6px;
+}
+
 .flood-collage-backdrop {
   position: absolute;
-  top: -50%;
-  left: -40%;
-  width: 180%;
-  height: 200%;
+  top: 50%;
+  left: 50%;
+  width: max(280vw, 3000px);
+  height: max(280vh, 2400px);
+  transform: translate(-50%, -50%) rotate(14deg);
   pointer-events: none;
   overflow: hidden;
-  transform: rotate(-13deg);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--flood-gap);
   z-index: 0;
-  opacity: 0.94;
+  filter: blur(3px) brightness(0.52) contrast(1.10);
 }
 
-.flood-collage-grid {
-  display: flex;
-  justify-content: center;
-  gap: 26px;
-  width: 100%;
-  height: 100%;
-}
-
+/* Column = two identical tracks with no gap between them.
+   Moving it by exactly -50% equals one track height -> seamless loop. */
 .flood-collage-col {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  width: 270px;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-/* Individual track that scrolls seamlessly */
-.flood-track {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  width: var(--flood-card-w);
   flex-shrink: 0;
   will-change: transform;
   backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translateZ(0);
+  animation: flood-loop-up 160s linear infinite;
 }
 
-/* Alternating gentle vertical drift with 100% seamless looping */
-.col-0 .flood-track { animation: loop-up 45s linear infinite; }
-.col-1 .flood-track { animation: loop-down 43s linear infinite; }
-.col-2 .flood-track { animation: loop-up 41s linear infinite; }
-.col-3 .flood-track { animation: loop-down 44s linear infinite; }
-.col-4 .flood-track { animation: loop-up 42s linear infinite; }
-.col-5 .flood-track { animation: loop-down 46s linear infinite; }
-
-@keyframes loop-up {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(calc(-100% - 24px));
-  }
+.flood-collage-col.dir-down {
+  animation-name: flood-loop-down;
 }
 
-@keyframes loop-down {
-  0% {
-    transform: translateY(calc(-100% - 24px));
+/* Track: gap between cards + matching bottom padding so track joins are
+   identical to card gaps. */
+.flood-track {
+  display: flex;
+  flex-direction: column;
+  gap: var(--flood-gap);
+  padding-bottom: var(--flood-gap);
+  flex-shrink: 0;
+}
+
+@keyframes flood-loop-up {
+  from {
+    transform: translate3d(0, 0, 0);
   }
-  100% {
-    transform: translateY(0);
+  to {
+    transform: translate3d(0, -50%, 0);
   }
 }
 
-/* Distinct, elevated photo cards with high contrast borders and shadows */
+@keyframes flood-loop-down {
+  from {
+    transform: translate3d(0, -50%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Large borderless photo cards with dark foundation and soft drop-shadow */
 .flood-photo-card {
   position: relative;
-  width: 270px;
-  height: 350px;
-  border-radius: 18px;
+  width: var(--flood-card-w);
+  height: var(--flood-card-h);
+  border-radius: 14px;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow:
-    0 22px 48px -10px rgba(0, 16, 10, 0.55),
-    0 8px 20px rgba(0, 0, 0, 0.28);
-  border: 2px solid rgba(255, 255, 255, 0.70);
-  background: #143d2b;
+  border: none;
+  background: #061910;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
 }
 
 .flood-photo-img {
@@ -1467,7 +1465,12 @@ textarea:focus-visible {
 .flood-card-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, transparent 45%, rgba(2, 28, 17, 0.88) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(2, 14, 9, 0.30) 0%,
+    rgba(2, 12, 8, 0.15) 45%,
+    rgba(1, 8, 5, 0.88) 100%
+  );
   display: flex;
   align-items: flex-end;
   padding: 16px 14px;
@@ -1477,32 +1480,33 @@ textarea:focus-visible {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: #ffffff;
-  background: rgba(3, 35, 22, 0.88);
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(2, 18, 11, 0.82);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 6px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.40);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.40);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
 
-/* Subtle focal backlight directly behind the login card, keeping the outer cards vivid */
+/* Darker vignette veil with backdrop blur to strongly emphasize the login card */
 .flood-collage-veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 62% 52% at 50% 50%,
-    rgba(240, 248, 243, 0.65) 0%,
-    rgba(235, 246, 239, 0.38) 42%,
-    rgba(10, 32, 22, 0.15) 75%,
-    rgba(6, 24, 16, 0.35) 100%
+    ellipse 65% 58% at 50% 50%,
+    rgba(4, 20, 13, 0.58) 0%,
+    rgba(3, 14, 9, 0.74) 48%,
+    rgba(2, 8, 5, 0.90) 100%
   );
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1;
 }
 
@@ -1523,10 +1527,10 @@ textarea:focus-visible {
   grid-template-columns: 42% 58%;
   background: #ffffff;
   border-radius: 18px;
-  border: 1px solid rgba(195, 222, 204, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow:
-    0 28px 72px -12px rgba(0, 25, 15, 0.28),
-    0 10px 28px -4px rgba(0, 25, 15, 0.14);
+    0 28px 84px -10px rgba(0, 0, 0, 0.65),
+    0 12px 36px -4px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   animation: none;
 }
@@ -1560,11 +1564,11 @@ textarea:focus-visible {
   margin-top: 18px;
   font-size: 14px;
   text-align: center;
-  color: #557262;
+  color: #9cb5a6;
 }
 
 .portal-setup a {
-  color: var(--green);
+  color: #34d399;
   font-weight: 600;
 }
 
@@ -1573,39 +1577,20 @@ textarea:focus-visible {
 }
 
 /* Responsiveness across Mobile, Tablet, and Desktop */
-@media (max-width: 1500px) {
-  .flood-collage-col.col-5 {
-    display: none;
-  }
-}
-
-@media (max-width: 1200px) {
-  .flood-collage-col.col-4,
-  .flood-collage-col.col-5 {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .flood-collage-col.col-3,
-  .flood-collage-col.col-4,
-  .flood-collage-col.col-5 {
-    display: none;
+@media (max-width: 1100px) {
+  .login-portal {
+    --flood-card-w: 280px;
+    --flood-card-h: 360px;
+    --flood-gap: 5px;
   }
 }
 
 @media (max-width: 740px) {
   .login-portal {
     padding: 28px 18px 65px;
-  }
-  .flood-collage-backdrop {
-    opacity: 0.80;
-  }
-  .flood-collage-col.col-2,
-  .flood-collage-col.col-3,
-  .flood-collage-col.col-4,
-  .flood-collage-col.col-5 {
-    display: none;
+    --flood-card-w: 210px;
+    --flood-card-h: 270px;
+    --flood-gap: 4px;
   }
   .portal-card {
     grid-template-columns: 1fr;
@@ -1632,7 +1617,7 @@ textarea:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flood-track {
+  .flood-collage-col {
     animation: none !important;
   }
 }

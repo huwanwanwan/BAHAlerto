@@ -114,51 +114,60 @@ const floodColumns = [
   ],
 ];
 
+/*
+ * Background collage geometry.
+ * Each track must be taller than the (rotated) backdrop so a single track
+ * always covers the visible area; the second identical track follows it,
+ * and the animation moves exactly one track height (-100%) for a seamless loop.
+ */
+const COLUMN_COUNT = 14;
+const CARDS_PER_TRACK = 12;
+const allCards = floodColumns.flat();
+
+const collageColumns = Array.from({ length: COLUMN_COUNT }, (_, colIdx) =>
+  Array.from(
+    { length: CARDS_PER_TRACK },
+    (_, i) => allCards[(colIdx * 5 + i * 2) % allCards.length],
+  ),
+);
+
+function FloodTrack({ cards }: { cards: (typeof allCards)[number][] }) {
+  return (
+    <div className="flood-track">
+      {cards.map((card, cardIdx) => (
+        <div key={cardIdx} className="flood-photo-card">
+          <Image
+            src={card.src}
+            alt=""
+            fill
+            sizes="360px"
+            loading="eager"
+            className="flood-photo-img"
+          />
+          <div className="flood-card-overlay">
+            <span className="flood-card-pill">{card.title}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Login() {
   return (
     <main className="login-portal">
-      {/* Tilted / Slanted Philippine Flood Photo Card Collage (matching video template) */}
+      {/* Tilted Philippine flood photo collage with seamless infinite scroll */}
       <div className="flood-collage-backdrop" aria-hidden="true">
-        <div className="flood-collage-grid">
-          {floodColumns.map((col, colIdx) => (
-            <div key={colIdx} className={`flood-collage-col col-${colIdx}`}>
-              {/* Track 1 */}
-              <div className="flood-track flood-track-1">
-                {col.map((card, cardIdx) => (
-                  <div key={cardIdx} className="flood-photo-card">
-                    <Image
-                      src={card.src}
-                      alt={card.alt}
-                      fill
-                      sizes="280px"
-                      className="flood-photo-img"
-                    />
-                    <div className="flood-card-overlay">
-                      <span className="flood-card-pill">{card.title}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Track 2 (identically repeated for 100% seamless infinite loop) */}
-              <div className="flood-track flood-track-2" aria-hidden="true">
-                {col.map((card, cardIdx) => (
-                  <div key={cardIdx} className="flood-photo-card">
-                    <Image
-                      src={card.src}
-                      alt={card.alt}
-                      fill
-                      sizes="280px"
-                      className="flood-photo-img"
-                    />
-                    <div className="flood-card-overlay">
-                      <span className="flood-card-pill">{card.title}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        {collageColumns.map((cards, colIdx) => (
+          <div
+            key={colIdx}
+            className={`flood-collage-col ${colIdx % 2 === 0 ? "dir-up" : "dir-down"}`}
+            style={{ animationDuration: `${150 + (colIdx % 5) * 12}s` }}
+          >
+            <FloodTrack cards={cards} />
+            <FloodTrack cards={cards} />
+          </div>
+        ))}
       </div>
 
       {/* Gentle center backlight veil so the login card has high contrast without obscuring the background */}
