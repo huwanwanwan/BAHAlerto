@@ -182,6 +182,10 @@ export default function Login() {
               className="portal-artwork-bg"
               priority
             />
+            {/* Luminous sunburst light & bloom behind logo to ensure high visibility */}
+            <div className="portal-brand-light" aria-hidden="true" />
+            <div className="portal-brand-light-bloom" aria-hidden="true" />
+            <div className="portal-brand-light-beam" aria-hidden="true" />
             <div className="portal-brand-logo-wrap">
               <Image
                 src="/admin-logo-transparent.png"
