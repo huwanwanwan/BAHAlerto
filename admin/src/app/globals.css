@@ -1305,297 +1305,82 @@ textarea:focus-visible {
   padding: 0;
 }
 
-/* ==========================================================================
-   BAHAlerto Admin Login Portal (Minimalist Flood-Monitoring Inspired)
-   ========================================================================== */
+/* Full-height artwork and simple underline login form. */
+.portal-card {width:min(820px,100%);grid-template-columns:42% 58%;min-height:580px;border-radius:16px;}
+.portal-brand.portal-artwork {padding:0;gap:0;overflow:hidden;min-height:100%;background:#005c38;}
+.portal-artwork img {object-fit:cover;object-position:center;}
+.portal-content {padding:48px 38px 32px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,#ffffff,#fbfdfc);}
+.portal-intro {margin:8px 0 28px;}
+.portal-form {gap:18px;}
+.portal-form label {color:#355246;font-weight:600;gap:8px;}
+.portal-form .portal-input {display:flex;align-items:center;position:relative;border:0;border-bottom:1px solid #cdd9d1;border-radius:0;background:transparent;transition:border-color 160ms ease,box-shadow 160ms ease;}
+.portal-form .portal-input>svg {position:absolute;left:12px;color:#90a29a;pointer-events:none;}
+.portal-form .portal-input input:not([type=checkbox]) {border:0;border-radius:0;padding:12px 30px 12px 0;width:100%;font-size:15px;min-width:0;}
+.portal-form .portal-input:focus-within {border-color:var(--green);box-shadow:0 1px 0 var(--green);}
+.portal-form .portal-input input:not([type=checkbox]):focus-visible {box-shadow:none;}
+.portal-form .password-field button {top:12px;right:10px;}
+.portal-form .show-password {font-weight:400;margin-top:-7px;}
+.portal-form .button {border-radius:24px;min-height:41px;margin-top:8px;}
+.portal-security {margin-top:30px;}
+@media(max-width:580px){.portal-card{grid-template-columns:1fr;min-height:0;max-width:410px}.portal-brand.portal-artwork{height:260px;min-height:0}.portal-artwork img{object-position:50% 50%}.portal-content{padding:30px 26px}}
 
-.login-portal {
-  position: relative;
-  min-height: 100svh;
-  max-width: none;
-  width: 100%;
-  padding: 48px 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(145deg, #F8FCF9 0%, #E7F4EC 48%, #DCEFE4 100%);
-  overflow-x: hidden;
-}
-
-/* Subtle outer topographic elevation contours (approx 6.5% opacity, masked center) */
-.login-topo-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("/topography-contours.svg");
-  background-size: 1100px 1100px;
-  background-position: center;
-  background-repeat: repeat;
-  opacity: 0.065;
-  mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, transparent 24%, rgba(0, 0, 0, 0.45) 58%, black 88%);
-  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, transparent 24%, rgba(0, 0, 0, 0.45) 58%, black 88%);
-  z-index: 0;
-}
-
-/* Centered 1000px Desktop Login Frame */
-.login-frame {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 1000px;
-  margin: auto;
-}
-
-/* 1000px Login Card with 16px Rounded Corners and Soft Multi-Layered Shadows */
-.portal-card {
-  width: 100%;
-  max-width: 1000px;
-  min-height: 590px;
-  display: grid;
-  grid-template-columns: 44% 56%;
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid rgba(195, 222, 204, 0.6);
-  box-shadow:
-    0 24px 64px -12px rgba(6, 78, 59, 0.10),
-    0 12px 28px -6px rgba(6, 78, 59, 0.05),
-    0 2px 8px 0 rgba(6, 78, 59, 0.03);
-  overflow: hidden;
-  animation: none;
-}
-
-/* Left Panel: Nature illustration and logo preserved exactly */
-.portal-brand.portal-artwork {
-  position: relative;
-  background: #005c38;
-  padding: 0;
-  gap: 0;
-  overflow: hidden;
-  min-height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.portal-artwork img {
-  object-fit: cover;
-  object-position: center;
-}
-
-/* Darker landscape framing preserves the central logo and typography */
+/* Darker landscape framing keeps the central logo and name bright. */
 .portal-artwork::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse 75% 36% at 50% 47%,
-    transparent 25%,
-    rgba(0, 31, 25, 0.04) 48%,
-    rgba(0, 28, 23, 0.28) 78%,
-    rgba(0, 22, 19, 0.42) 100%
-  );
+  background:
+    radial-gradient(ellipse 75% 36% at 50% 47%, transparent 25%, rgba(0, 31, 25, .04) 48%, rgba(0, 28, 23, .28) 78%, rgba(0, 22, 19, .42) 100%);
 }
 
-/* Right Panel: White login form with dark forest-green headings and primary green accents */
-.portal-content {
-  padding: 56px clamp(36px, 5vw, 64px);
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+.portal-content h1 {margin-bottom:32px;}
+.portal-form {gap:24px;}
+.portal-recovery {margin-top:22px;}
 
-.portal-content h1 {
-  font-size: 34px;
-  color: #064E3B; /* Dark forest-green heading */
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin-bottom: 28px;
-}
-
-.portal-form {
-  gap: 22px;
-}
-
-.portal-form label {
-  color: #064E3B;
-  font-size: 15px;
-  font-weight: 600;
-  gap: 6px;
-}
+/* Larger, readable login text with empty credential fields. */
+.portal-content h1 {font-size:36px;}
+.portal-form label {font-size:16px;}
+.portal-form .portal-input input:not([type=checkbox]) {font-size:17px;}
+.portal-form .show-password {font-size:15px;}
+.portal-form .button {font-size:16px;min-height:45px;}
+.portal-recovery {font-size:15px;}
+.portal-setup {font-size:15px;}
+@media(max-width:580px){.portal-content h1{font-size:34px}.portal-recovery{font-size:15px}}
 
 .portal-form label:not(.show-password),
-.portal-form .portal-input input:not([type="checkbox"]) {
-  color: #064E3B;
-  -webkit-text-fill-color: #064E3B;
+.portal-form .portal-input input:not([type=checkbox]) {
+  color: var(--green);
+  -webkit-text-fill-color: var(--green);
 }
 
-.portal-form .portal-input {
-  display: flex;
-  align-items: center;
-  position: relative;
-  border: 0;
-  border-bottom: 1.5px solid #d1ded6;
-  border-radius: 0;
-  background: transparent;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+/* Mint login backdrop, full-artwork framing and centered card. */
+.login-portal {
+  min-height:100svh;
+  padding:76px 28px;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(250,253,251,.98) 0%, rgba(248,252,249,.55) 42%, transparent 80%),
+    linear-gradient(135deg,#FAFDFB 0%,#EFF8F2 55%,#E5F3E9 100%);
 }
-
-.portal-form .portal-input input:not([type="checkbox"]) {
-  border: 0;
-  border-radius: 0;
-  padding: 10px 30px 10px 0;
-  width: 100%;
-  font-size: 16px;
-  min-width: 0;
-  background: transparent;
+.login-frame {position:relative;width:100%;max-width:900px;}
+.portal-card {
+  width:100%;max-width:none;min-height:0;
+  grid-template-columns:42% 58%;border-radius:18px;
+  border:1px solid rgba(200,222,207,.65);
+  box-shadow:0 20px 60px rgba(31,79,48,.10),0 4px 14px rgba(31,79,48,.05);
+  animation:none;
 }
-
-.portal-form .portal-input:focus-within {
-  border-bottom-color: #078443;
-  box-shadow: 0 1px 0 #078443;
+.portal-brand.portal-artwork {height:auto;min-height:0;aspect-ratio:971 / 1619;}
+.portal-artwork img {object-fit:contain;object-position:center;}
+.portal-content {padding:56px clamp(30px,5vw,64px);background:#fff;}
+.portal-setup {position:absolute;top:100%;left:0;right:0;margin-top:20px;}
+@media(max-width:740px){
+  .login-portal{padding:28px 20px 70px;}
+  .portal-card{grid-template-columns:1fr;max-width:520px;margin-inline:auto;}
+  .portal-brand.portal-artwork{aspect-ratio:971 / 1619;height:auto;min-height:0;}
+  .portal-content{padding:36px 30px 40px;}
 }
-
-.portal-form .password-field button {
-  top: 10px;
-  right: 6px;
-}
-
-.portal-form .show-password {
-  font-size: 14px;
-  color: #516b5c;
-  font-weight: 400;
-  margin-top: -6px;
-  cursor: pointer;
-}
-
-.portal-form .show-password input {
-  accent-color: #078443;
-}
-
-/* Primary Green Button (#078443) */
-.portal-form .button {
-  background: #078443;
-  color: #ffffff;
-  border-radius: 24px;
-  font-size: 16px;
-  font-weight: 600;
-  min-height: 46px;
-  width: 100%;
-  margin-top: 10px;
-  border: none;
-  box-shadow: 0 4px 14px -2px rgba(7, 132, 67, 0.35);
-  transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
-}
-
-.portal-form .button:hover:not(:disabled) {
-  background: #066e38;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px -2px rgba(7, 132, 67, 0.42);
-}
-
-.portal-form .button:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.portal-recovery {
-  text-align: center;
-  font-size: 14px;
-  margin-top: 22px;
-  color: #557262;
-}
-
-.portal-recovery a {
-  font-weight: 600;
-  color: #078443;
-  transition: color 0.15s ease;
-}
-
-.portal-recovery a:hover {
-  color: #064E3B;
-  text-decoration: underline;
-}
-
-.portal-setup {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 18px;
-  font-size: 14px;
-  text-align: center;
-  color: #557262;
-}
-
-.portal-setup a {
-  color: #078443;
-  font-weight: 600;
-}
-
-.portal-setup a:hover {
-  color: #064E3B;
-  text-decoration: underline;
-}
-
-/* Responsive Breakpoints across Desktop, Tablet, and Mobile */
-@media (max-width: 960px) {
-  .login-frame {
-    max-width: 800px;
-  }
-  .portal-card {
-    grid-template-columns: 42% 58%;
-    min-height: 540px;
-  }
-  .portal-content {
-    padding: 44px 36px;
-  }
-}
-
-@media (max-width: 740px) {
-  .login-portal {
-    padding: 32px 18px 60px;
-  }
-  .login-frame {
-    max-width: 480px;
-  }
-  .portal-card {
-    grid-template-columns: 1fr;
-    max-width: 480px;
-    margin-inline: auto;
-    min-height: 0;
-  }
-  .portal-brand.portal-artwork {
-    height: 300px;
-    min-height: 300px;
-    aspect-ratio: auto;
-  }
-  .portal-content {
-    padding: 36px 30px 40px;
-  }
-  .portal-content h1 {
-    font-size: 28px;
-    margin-bottom: 22px;
-  }
-  .portal-setup {
-    position: static;
-    margin-top: 24px;
-  }
-}
-
-@media (max-width: 420px) {
-  .login-portal {
-    padding-inline: 14px;
-  }
-  .portal-brand.portal-artwork {
-    height: 250px;
-    min-height: 250px;
-  }
-  .portal-content {
-    padding-inline: 22px;
-  }
-}
+@media(max-width:400px){.login-portal{padding-inline:14px}.portal-content{padding-inline:24px}}
 
 /* Readable admin sizing across modules and shared controls. */
 nav a {min-height:48px;white-space:normal;line-height:1.45;}
