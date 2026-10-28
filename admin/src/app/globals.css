@@ -1369,7 +1369,7 @@ textarea:focus-visible {
   justify-content: center;
   align-items: center;
   padding: 56px 24px;
-  background: #062318;
+  background: #0a2e1e;
 }
 
 /*
@@ -1397,7 +1397,7 @@ textarea:focus-visible {
   align-items: flex-start;
   gap: var(--flood-gap);
   z-index: 0;
-  filter: blur(6px) brightness(0.88) contrast(1.08);
+  filter: blur(6px) brightness(0.92) contrast(1.08);
 }
 
 /* Column = two identical tracks with no gap between them.
@@ -1444,7 +1444,7 @@ textarea:focus-visible {
   }
 }
 
-/* Large borderless photo cards with dark green foundation and soft drop-shadow */
+/* Large borderless photo cards with light green accent foundation */
 .flood-photo-card {
   position: relative;
   width: var(--flood-card-w);
@@ -1453,8 +1453,8 @@ textarea:focus-visible {
   overflow: hidden;
   flex-shrink: 0;
   border: none;
-  background: #072e20;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  background: #0d3d28;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .flood-photo-img {
@@ -1467,9 +1467,9 @@ textarea:focus-visible {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(4, 35, 23, 0.15) 0%,
-    transparent 40%,
-    rgba(4, 35, 23, 0.72) 100%
+    rgba(34, 197, 94, 0.10) 0%,
+    transparent 42%,
+    rgba(6, 44, 28, 0.70) 100%
   );
   display: flex;
   align-items: flex-end;
@@ -1480,13 +1480,13 @@ textarea:focus-visible {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  color: #ffffff;
-  background: rgba(3, 40, 26, 0.86);
+  color: #f0fdf4;
+  background: rgba(8, 48, 30, 0.88);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 6px 12px;
   border-radius: 12px;
-  border: none;
+  border: 1px solid rgba(74, 222, 128, 0.35);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   white-space: nowrap;
   overflow: hidden;
@@ -1494,24 +1494,24 @@ textarea:focus-visible {
   max-width: 100%;
 }
 
-/* Rich dark green ambient veil with heavy backdrop blur for increased blurredness */
+/* Luminous light green ambient veil with heavy backdrop blur */
 .flood-collage-veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
     ellipse 68% 60% at 50% 50%,
-    rgba(7, 60, 38, 0.45) 0%,
-    rgba(5, 46, 29, 0.60) 42%,
-    rgba(4, 32, 20, 0.78) 75%,
-    rgba(2, 22, 14, 0.92) 100%
+    rgba(52, 211, 153, 0.32) 0%,
+    rgba(34, 197, 94, 0.28) 38%,
+    rgba(16, 120, 78, 0.55) 72%,
+    rgba(8, 50, 32, 0.82) 100%
   );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   z-index: 1;
 }
 
-/* Centered Login Frame & Card (with green border line and glowing green blur halo) */
+/* Centered Login Frame & Card (with light green border line and glowing light green blur halo) */
 .login-frame {
   position: relative;
   z-index: 2;
@@ -1528,13 +1528,13 @@ textarea:focus-visible {
   grid-template-columns: 42% 58%;
   background: #ffffff;
   border-radius: 20px;
-  border: 2px solid #078443;
+  border: 2px solid #22c55e;
   box-shadow:
-    0 0 0 2px rgba(16, 185, 129, 0.45),
-    0 0 60px rgba(7, 132, 67, 0.50),
-    0 0 120px rgba(16, 185, 129, 0.30),
-    0 28px 84px -12px rgba(2, 28, 18, 0.65),
-    0 12px 32px -4px rgba(2, 28, 18, 0.40);
+    0 0 0 2px rgba(74, 222, 128, 0.60),
+    0 0 50px rgba(74, 222, 128, 0.45),
+    0 0 110px rgba(52, 211, 153, 0.28),
+    0 28px 84px -12px rgba(2, 28, 18, 0.55),
+    0 12px 32px -4px rgba(2, 28, 18, 0.35);
   overflow: hidden;
   animation: none;
 }
