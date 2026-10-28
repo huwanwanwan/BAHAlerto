@@ -144,9 +144,6 @@ function FloodTrack({ cards }: { cards: (typeof allCards)[number][] }) {
             loading="eager"
             className="flood-photo-img"
           />
-          <div className="flood-card-overlay">
-            <span className="flood-card-pill">{card.title}</span>
-          </div>
         </div>
       ))}
     </div>
@@ -178,8 +175,8 @@ export default function Login() {
         <section className="portal-card" aria-labelledby="login-title">
           <div className="portal-brand portal-artwork">
             <Image
-              src="/flood-photos/ph-flood-0.webp"
-              alt="Marilao Disaster Operations Center"
+              src="/flood-photos/ph-flood-01.webp"
+              alt="Marilao Municipal Operations Center"
               fill
               sizes="(max-width: 740px) 100vw, 378px"
               className="portal-artwork-bg"
