@@ -1369,7 +1369,7 @@ textarea:focus-visible {
   justify-content: center;
   align-items: center;
   padding: 56px 24px;
-  background: #0d271c;
+  background: #062318;
 }
 
 /*
@@ -1397,7 +1397,7 @@ textarea:focus-visible {
   align-items: flex-start;
   gap: var(--flood-gap);
   z-index: 0;
-  filter: blur(2.5px) brightness(0.82) contrast(1.05);
+  filter: blur(2.5px) brightness(0.85) contrast(1.08);
 }
 
 /* Column = two identical tracks with no gap between them.
@@ -1444,7 +1444,7 @@ textarea:focus-visible {
   }
 }
 
-/* Large borderless photo cards with natural tone and soft drop-shadow */
+/* Large borderless photo cards with dark green foundation and soft drop-shadow */
 .flood-photo-card {
   position: relative;
   width: var(--flood-card-w);
@@ -1453,8 +1453,8 @@ textarea:focus-visible {
   overflow: hidden;
   flex-shrink: 0;
   border: none;
-  background: #0d271c;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  background: #072e20;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
 }
 
 .flood-photo-img {
@@ -1467,9 +1467,9 @@ textarea:focus-visible {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.08) 0%,
-    transparent 45%,
-    rgba(4, 24, 15, 0.65) 100%
+    rgba(4, 35, 23, 0.15) 0%,
+    transparent 40%,
+    rgba(4, 35, 23, 0.72) 100%
   );
   display: flex;
   align-items: flex-end;
@@ -1481,7 +1481,7 @@ textarea:focus-visible {
   font-weight: 600;
   letter-spacing: 0.3px;
   color: #ffffff;
-  background: rgba(3, 35, 22, 0.82);
+  background: rgba(3, 40, 26, 0.86);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 6px 12px;
@@ -1494,24 +1494,24 @@ textarea:focus-visible {
   max-width: 100%;
 }
 
-/* Soft luminous backlight veil spotlighting the center login card while keeping background photos colorful */
+/* Rich dark green ambient veil with backdrop blur for disaster-monitoring theme */
 .flood-collage-veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 62% 56% at 50% 50%,
-    rgba(240, 248, 243, 0.40) 0%,
-    rgba(225, 242, 232, 0.22) 36%,
-    rgba(10, 36, 25, 0.32) 68%,
-    rgba(6, 24, 16, 0.58) 100%
+    ellipse 65% 58% at 50% 50%,
+    rgba(8, 56, 36, 0.35) 0%,
+    rgba(5, 42, 27, 0.52) 42%,
+    rgba(4, 30, 20, 0.72) 75%,
+    rgba(3, 22, 14, 0.88) 100%
   );
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   z-index: 1;
 }
 
-/* Centered Login Frame & Card (highlighted with glowing elevation and crisp border) */
+/* Centered Login Frame & Card (highlighted with emerald elevation and crisp border) */
 .login-frame {
   position: relative;
   z-index: 2;
@@ -1528,12 +1528,12 @@ textarea:focus-visible {
   grid-template-columns: 42% 58%;
   background: #ffffff;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(167, 243, 208, 0.60);
   box-shadow:
-    0 0 0 1px rgba(7, 132, 67, 0.12),
-    0 0 40px rgba(255, 255, 255, 0.40),
-    0 28px 84px -12px rgba(0, 25, 15, 0.40),
-    0 12px 32px -4px rgba(0, 25, 15, 0.20);
+    0 0 0 1px rgba(7, 132, 67, 0.20),
+    0 0 45px rgba(7, 132, 67, 0.25),
+    0 28px 84px -12px rgba(2, 28, 18, 0.60),
+    0 12px 32px -4px rgba(2, 28, 18, 0.35);
   overflow: hidden;
   animation: none;
 }
@@ -1567,12 +1567,12 @@ textarea:focus-visible {
   margin-top: 18px;
   font-size: 14px;
   text-align: center;
-  color: #e2f0e7;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  color: #c4e4d1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
 }
 
 .portal-setup a {
-  color: #4ade80;
+  color: #34d399;
   font-weight: 600;
 }
 
