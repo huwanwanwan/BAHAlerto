@@ -1559,7 +1559,7 @@ textarea:focus-visible {
   height: auto;
   min-height: 0;
   aspect-ratio: 971 / 1619;
-  background: #005c38;
+  background: #ffffff;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1569,21 +1569,7 @@ textarea:focus-visible {
 .portal-artwork-bg {
   object-fit: cover !important;
   object-position: center;
-  filter: brightness(0.88) contrast(1.10);
-}
-
-.portal-artwork-tint {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(7, 132, 67, 0.42) 0%,
-    rgba(0, 92, 56, 0.60) 48%,
-    rgba(2, 38, 23, 0.85) 100%
-  );
-  mix-blend-mode: multiply;
-  z-index: 1;
-  pointer-events: none;
+  filter: none;
 }
 
 .portal-brand-logo-wrap {
@@ -1602,7 +1588,7 @@ textarea:focus-visible {
   max-width: 320px;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 14px 28px rgba(0, 20, 10, 0.75));
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.65));
 }
 
 .portal-content {
