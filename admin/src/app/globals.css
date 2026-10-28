@@ -1551,7 +1551,20 @@ textarea:focus-visible {
 .portal-artwork-bg {
   object-fit: cover !important;
   object-position: center;
-  filter: none;
+  filter: brightness(0.85) contrast(1.10);
+}
+
+.portal-artwork-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 48%,
+    rgba(255, 255, 255, 0.20) 0%,
+    rgba(4, 38, 24, 0.20) 48%,
+    rgba(2, 22, 14, 0.50) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
 }
 
 .portal-brand-logo-wrap {
@@ -1570,7 +1583,9 @@ textarea:focus-visible {
   max-width: 320px;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 12px 24px rgba(0, 20, 10, 0.35));
+  filter:
+    drop-shadow(0 0 16px rgba(255, 255, 255, 0.75))
+    drop-shadow(0 14px 28px rgba(0, 20, 10, 0.55));
 }
 
 .portal-content {
