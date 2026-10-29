@@ -1,69 +1,637 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/backend.dart';
 import '../../shared/widgets.dart';
+import '../../shared/backend_list.dart';
 
-void showAccountUnavailable(BuildContext context, String action) {
-  showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(action),
-      content: const Text(
-        'Supabase Authentication is not connected. Account creation and login are unavailable in this demonstration. You can continue checking sample flood information as a guest.',
+Future<void> showAccount(BuildContext context, {bool register = false}) =>
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => AccountScreen(register: register),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Continue as Guest'),
+    );
+
+class AccountScreen extends ConsumerStatefulWidget {
+  final bool register;
+  final VoidCallback? onAuthenticated, onGuest;
+  const AccountScreen({
+    super.key,
+    this.register = false,
+    this.onAuthenticated,
+    this.onGuest,
+  });
+  @override
+  ConsumerState<AccountScreen> createState() => _AccountState();
+}
+
+class _AccountState extends ConsumerState<AccountScreen> {
+  final form = GlobalKey<FormState>();
+  final email = TextEditingController(),
+      password = TextEditingController(),
+      name = TextEditingController();
+  bool busy = false;
+  bool passwordVisible = false;
+  String? message;
+  @override
+  void dispose() {
+    email.dispose();
+    password.dispose();
+    name.dispose();
+    super.dispose();
+  }
+
+  Future<void> submit() async {
+    if (!form.currentState!.validate()) return;
+    setState(() {
+      busy = true;
+      message = null;
+    });
+    try {
+      final auth = ref.read(clientProvider).auth;
+      if (widget.register) {
+        final result = await auth.signUp(
+          email: email.text.trim(),
+          password: password.text,
+          data: {'full_name': name.text.trim()},
+        );
+        if (result.session == null) {
+          if (mounted) {
+            setState(
+              () => message =
+                  'Check your email to confirm registration, then return here to log in.',
+            );
+          }
+          return;
+        }
+      } else {
+        await auth.signInWithPassword(
+          email: email.text.trim(),
+          password: password.text,
+        );
+      }
+      if (mounted) {
+        if (widget.onAuthenticated != null) {
+          widget.onAuthenticated!();
+        } else {
+          Navigator.pop(context);
+        }
+      }
+    } catch (e) {
+      if (mounted) setState(() => message = backendError(e));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  InputDecoration fieldDecoration(
+    String label,
+    IconData icon, {
+    Widget? suffix,
+  }) => InputDecoration(
+    labelText: label,
+    prefixIcon: Icon(icon, size: 20, color: const Color(0xFF789184)),
+    suffixIcon: suffix,
+    filled: true,
+    fillColor: const Color(0xFFF3F7F2),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide.none,
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: Color(0xFFE9F0E7)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: primaryGreen, width: 1.5),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).height < 650;
+    final heroHeight =
+        (compact ? 205.0 : 254.0) + MediaQuery.paddingOf(context).top;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: heroHeight - 30),
+                    child: Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.fromLTRB(26, 56, 26, 24),
+                      child: AutofillGroup(
+                        child: Form(
+                          key: form,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                widget.register
+                                    ? 'Create an account'
+                                    : 'Welcome back',
+                                style: const TextStyle(
+                                  fontSize: 27,
+                                  height: 1.2,
+                                  fontWeight: FontWeight.w800,
+                                  color: ink,
+                                  letterSpacing: -.7,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                widget.register
+                                    ? 'Join a community that looks out for each other.'
+                                    : 'Stay informed. Look out for your community.',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  height: 1.5,
+                                  color: mutedText,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              if (widget.register) ...[
+                                TextFormField(
+                                  controller: name,
+                                  enabled: !busy,
+                                  autofillHints: const [AutofillHints.name],
+                                  textInputAction: TextInputAction.next,
+                                  decoration: fieldDecoration(
+                                    'Full name',
+                                    Icons.person_outline_rounded,
+                                  ),
+                                  maxLength: 200,
+                                  validator: (v) => (v?.trim().isEmpty ?? true)
+                                      ? 'Enter your name.'
+                                      : null,
+                                ),
+                                const SizedBox(height: 14),
+                              ],
+                              TextFormField(
+                                controller: email,
+                                enabled: !busy,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.email],
+                                autocorrect: false,
+                                decoration: fieldDecoration(
+                                  'Email',
+                                  Icons.mail_outline_rounded,
+                                ),
+                                validator: (v) =>
+                                    RegExp(
+                                      r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                                    ).hasMatch(v?.trim() ?? '')
+                                    ? null
+                                    : 'Enter a valid email.',
+                              ),
+                              const SizedBox(height: 14),
+                              TextFormField(
+                                controller: password,
+                                enabled: !busy,
+                                obscureText: !passwordVisible,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: [
+                                  widget.register
+                                      ? AutofillHints.newPassword
+                                      : AutofillHints.password,
+                                ],
+                                onFieldSubmitted: (_) {
+                                  if (!busy && backendConfigured) submit();
+                                },
+                                decoration: fieldDecoration(
+                                  'Password',
+                                  Icons.lock_outline_rounded,
+                                  suffix: IconButton(
+                                    tooltip: passwordVisible
+                                        ? 'Hide password'
+                                        : 'Show password',
+                                    onPressed: busy
+                                        ? null
+                                        : () => setState(
+                                            () => passwordVisible =
+                                                !passwordVisible,
+                                          ),
+                                    icon: Icon(
+                                      passwordVisible
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      size: 20,
+                                      color: mutedText,
+                                    ),
+                                  ),
+                                ),
+                                validator: (v) =>
+                                    (v?.length ?? 0) <
+                                        (widget.register ? 12 : 1)
+                                    ? 'Enter ${widget.register ? 'at least 12 characters' : 'your password'}.'
+                                    : null,
+                              ),
+                              const SizedBox(height: 20),
+                              if (message != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: Semantics(
+                                    liveRegion: true,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(13),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF0F6ED),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        message!,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          height: 1.5,
+                                          color: ink,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              FilledButton(
+                                onPressed: busy || !backendConfigured
+                                    ? null
+                                    : submit,
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(52),
+                                  backgroundColor: primaryGreen,
+                                  disabledBackgroundColor: const Color(
+                                    0xFFAAC8AE,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                child: Text(
+                                  busy
+                                      ? 'Please wait...'
+                                      : widget.register
+                                      ? 'Register'
+                                      : 'Log In',
+                                ),
+                              ),
+                              if (!widget.register)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: TextButton(
+                                    onPressed: busy
+                                        ? null
+                                        : () => showAccount(
+                                            context,
+                                            register: true,
+                                          ),
+                                    child: const Text('Create an account'),
+                                  ),
+                                ),
+                              if (widget.onAuthenticated != null &&
+                                  ref.watch(userProvider) != null)
+                                OutlinedButton(
+                                  onPressed: busy
+                                      ? null
+                                      : widget.onAuthenticated,
+                                  child: const Text(
+                                    'Continue with signed-in account',
+                                  ),
+                                ),
+                              if (widget.onGuest != null) ...[
+                                const SizedBox(height: 4),
+                                const Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(color: Color(0xFFE6ECE4)),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                      ),
+                                      child: Text(
+                                        'or',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: mutedText,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Divider(color: Color(0xFFE6ECE4)),
+                                    ),
+                                  ],
+                                ),
+                                TextButton(
+                                  onPressed: busy ? null : widget.onGuest,
+                                  child: const Text('Continue as guest'),
+                                ),
+                              ],
+                              const SizedBox(height: 12),
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.shield_outlined,
+                                    size: 14,
+                                    color: Color(0xFF81977F),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      'Together, a more prepared community.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF81977F),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: _AccountHero(height: heroHeight),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _AccountHero extends StatelessWidget {
+  final double height;
+  const _AccountHero({required this.height});
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    key: const ValueKey('curved-login-header'),
+    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(38)),
+    child: SizedBox(
+      height: height,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF004D35), Color(0xFF238C45), Color(0xFFA4CD49)],
+            stops: [0, .56, 1],
+          ),
+        ),
+        child: LayoutBuilder(
+          builder: (context, box) {
+            final artWidth = (box.maxWidth * .46).clamp(140.0, 220.0);
+            final top = MediaQuery.paddingOf(context).top;
+            return Stack(
+              children: [
+                Positioned(
+                  right: -35,
+                  top: -50,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0x0FFFFFFF),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 45,
+                  bottom: -70,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0x0CFFFFFF),
+                    ),
+                  ),
+                ),
+                if (Navigator.canPop(context))
+                  Positioned(
+                    top: top + 8,
+                    left: 12,
+                    child: IconButton(
+                      tooltip: 'Back',
+                      onPressed: () => Navigator.pop(context),
+                      style: IconButton.styleFrom(
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: const Icon(Icons.arrow_back_rounded),
+                    ),
+                  ),
+                Positioned(
+                  left: 26,
+                  top: top + (Navigator.canPop(context) ? 61 : 53),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'BAHAlerto',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          letterSpacing: -.8,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Be aware.\nTravel prepared.',
+                        style: TextStyle(
+                          color: Color(0xFFEAF5D9),
+                          fontSize: 13,
+                          height: 1.55,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 12,
+                  top: top + 24,
+                  width: artWidth,
+                  height: height - top - 38,
+                  child: ExcludeSemantics(
+                    child: Image.asset(
+                      'assets/stickers/bahalerto-commuter.png',
+                      fit: BoxFit.contain,
+                      cacheWidth: 660,
+                      filterQuality: FilterQuality.medium,
+                      errorBuilder: (_, _, _) => Image.asset(
+                        'assets/logo/pin.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     ),
   );
 }
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
   @override
-  Widget build(BuildContext context) => PageBody(
-    title: 'Profile',
-    subtitle: 'Guest access ? No account required to check floods.',
-    children: [
-      const InfoCard(
-        child: Text(
-          'Welcome, Guest. Public flood information remains accessible without registration.',
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider);
+    final profile = ref.watch(profileProvider);
+    final roads = ref.watch(roadsProvider).asData?.value ?? [];
+    return PageBody(
+      title: 'Profile',
+      subtitle: user?.email ?? 'Browse public information as a guest.',
+      children: [
+        if (!backendConfigured)
+          const InfoCard(
+            child: Text(
+              'Backend is not configured. Start with the supplied mobile launch configuration.',
+            ),
+          ),
+        if (user == null) ...[
+          FilledButton(
+            onPressed: !backendConfigured ? null : () => showAccount(context),
+            child: const Text('Log In'),
+          ),
+          OutlinedButton(
+            onPressed: !backendConfigured
+                ? null
+                : () => showAccount(context, register: true),
+            child: const Text('Register'),
+          ),
+        ] else ...[
+          profile.when(
+            data: (p) => InfoCard(
+              child: Text(
+                '${p?['full_name'] ?? 'User'} ? ${p?['status'] ?? 'Unknown status'}',
+              ),
+            ),
+            loading: () => const LinearProgressIndicator(),
+            error: (e, _) => Text(backendError(e)),
+          ),
+          OutlinedButton(
+            onPressed: () async {
+              try {
+                await ref
+                    .read(clientProvider)
+                    .auth
+                    .signOut(scope: SignOutScope.local);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(backendError(e))));
+                }
+              }
+            },
+            child: const Text('Sign out'),
+          ),
+          const Text('Saved locations'),
+          BackendList(
+            value: ref.watch(savedProvider),
+            refresh: () => ref.invalidate(savedProvider),
+            empty: 'No saved locations.',
+            item: (row) => ListTile(
+              title: Text(
+                roads.where((r) => r.id == row['road_id']).firstOrNull?.road ??
+                    'Unavailable road',
+              ),
+              trailing: IconButton(
+                tooltip: 'Remove saved location',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () async {
+                  try {
+                    await ref
+                        .read(clientProvider)
+                        .from('saved_locations')
+                        .delete()
+                        .eq('id', row['id'])
+                        .eq('owner_id', user.id);
+                    ref.invalidate(savedProvider);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(backendError(e))));
+                    }
+                  }
+                },
+              ),
+            ),
+          ),
+          ref
+              .watch(preferencesProvider)
+              .when(
+                loading: () => const LinearProgressIndicator(),
+                error: (e, _) => Text(backendError(e)),
+                data: (p) => SwitchListTile(
+                  title: const Text('Personalized alert preference'),
+                  subtitle: const Text(
+                    'Preference is saved. Push delivery is not enabled yet.',
+                  ),
+                  value: p?['personalized_alerts'] == true,
+                  onChanged: (value) async {
+                    try {
+                      final table = ref
+                          .read(clientProvider)
+                          .from('notification_preferences');
+                      if (p == null) {
+                        await table.insert({
+                          'owner_id': user.id,
+                          'personalized_alerts': value,
+                        });
+                      } else {
+                        await table
+                            .update({'personalized_alerts': value})
+                            .eq('owner_id', user.id);
+                      }
+                      ref.invalidate(preferencesProvider);
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(backendError(e))),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ),
+        ],
+        const InfoCard(
+          child: Text(
+            'BAHAlerto - Published administrator information and community reporting. Avoid flooded roads and follow current official advisories.',
+          ),
         ),
-      ),
-      FilledButton.icon(
-        onPressed: () => showAccountUnavailable(context, 'Log In'),
-        icon: const Icon(Icons.login),
-        label: const Text('Log In'),
-      ),
-      OutlinedButton(
-        onPressed: () => showAccountUnavailable(context, 'Register'),
-        child: const Text('Register'),
-      ),
-      const ListTile(
-        leading: Icon(Icons.language),
-        title: Text('Language settings'),
-        subtitle: Text('English ? Filipino translation is not yet available'),
-      ),
-      const ListTile(
-        leading: Icon(Icons.bookmark_outline),
-        title: Text('Saved locations'),
-        subtitle: Text(
-          'Device persistence and account synchronization are not connected.',
-        ),
-      ),
-      const ListTile(
-        leading: Icon(Icons.notifications_outlined),
-        title: Text('Notification preferences'),
-        subtitle: Text(
-          'Public alerts are available from the bell. Personalized notifications require a connected account.',
-        ),
-      ),
-      const InfoCard(
-        child: Text(
-          'Help and About\nBAHAlerto ? Flood awareness prototype\nAll observations are demonstration fixtures. No live flood data, GPS, uploads or account storage is connected. Reports in memory disappear on restart. Avoid flooded roads and follow official advisories.',
-        ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }

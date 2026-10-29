@@ -1,34 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/backend.dart';
 import '../../shared/widgets.dart';
+import '../../shared/backend_list.dart';
 
-class EvacuationScreen extends StatelessWidget {
+class EvacuationScreen extends ConsumerWidget {
   const EvacuationScreen({super.key});
   @override
-  Widget build(BuildContext context) => const PageBody(
+  Widget build(BuildContext context, WidgetRef ref) => PageBody(
     title: 'Evacuation information',
     subtitle:
-        'Confirm destinations with your local government before traveling.',
+        'Confirm current availability with your local government before traveling. Latest 100 published centers.',
     children: [
-      InfoCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Tag('SAMPLE CENTER • Fictional'),
-            SizedBox(height: 16),
-            Text(
-              'Community evacuation hall',
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Illustrative record only\nAddress: Not provided\nCapacity: Not verified\nOperating status: Unknown\nContact: Not connected',
-            ),
-          ],
+      BackendList(
+        value: ref.watch(directoryProvider('evacuation_centers')),
+        refresh: () => ref.invalidate(directoryProvider('evacuation_centers')),
+        empty: 'No published evacuation centers.',
+        item: (r) => InfoCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(r['name'] as String, style: const TextStyle(fontSize: 21)),
+              Text(r['address'] as String),
+              Text(r['operational_details'] as String),
+              Text('Contact: ${r['contact'] ?? 'Not provided'}'),
+              Text('Verified: ${r['verified_at']}'),
+            ],
+          ),
         ),
       ),
-      InfoCard(
-        child: Text(
-          'No verified evacuation center directory or emergency contact list is connected. Consult your barangay or city disaster risk reduction office for current center and contact information.',
+    ],
+  );
+}
+
+class ContactsScreen extends ConsumerWidget {
+  const ContactsScreen({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => PageBody(
+    title: 'Emergency contacts',
+    subtitle: 'Published local directory ? Latest 100',
+    children: [
+      BackendList(
+        value: ref.watch(directoryProvider('emergency_contacts')),
+        refresh: () => ref.invalidate(directoryProvider('emergency_contacts')),
+        empty:
+            'No published emergency contacts. Consult official local authority channels.',
+        item: (r) => InfoCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(r['organization'] as String),
+              SelectableText(r['phone'] as String),
+              Text(r['service_area'] as String),
+              Text(r['details'] as String? ?? ''),
+            ],
+          ),
         ),
       ),
     ],

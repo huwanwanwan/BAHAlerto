@@ -4,6 +4,10 @@ enum Evidence { verified, community, historical, estimated }
 
 class FloodRecord {
   final String road, area, description;
+  final String id;
+  final double latitude, longitude;
+  final DateTime? observedAt, validUntil;
+  final String? sourceName;
   final double? depth;
   final Evidence evidence;
   const FloodRecord(
@@ -11,47 +15,23 @@ class FloodRecord {
     this.area,
     this.depth,
     this.evidence,
-    this.description,
-  );
-  String get source => switch (evidence) {
-    Evidence.verified => 'Verified observation (sample)',
-    Evidence.community => 'Community report • Unverified',
-    Evidence.historical => 'Historical hazard • No current depth',
-    Evidence.estimated => 'Estimated level • Unverified',
-  };
+    this.description, {
+    this.id = '',
+    this.latitude = 0,
+    this.longitude = 0,
+    this.observedAt,
+    this.validUntil,
+    this.sourceName,
+  });
+  String get source =>
+      sourceName ??
+      switch (evidence) {
+        Evidence.verified => 'Verified observation',
+        Evidence.community => 'Community report • Unverified',
+        Evidence.historical => 'Historical hazard • No current depth',
+        Evidence.estimated => 'Estimated level • Unverified',
+      };
 }
-
-const sampleTime = '15 Jun 2026, 2:30 PM PHT';
-const records = [
-  FloodRecord(
-    'España Boulevard',
-    'Sampaloc, Manila',
-    30,
-    Evidence.community,
-    'Sample report of water covering parts of the road.',
-  ),
-  FloodRecord(
-    'Taft Avenue',
-    'Malate, Manila',
-    15,
-    Evidence.verified,
-    'Fictional reviewed observation for interface testing.',
-  ),
-  FloodRecord(
-    'Marikina Riverbanks',
-    'Marikina City',
-    null,
-    Evidence.historical,
-    'Illustrative historical hazard; this is not a current flood observation.',
-  ),
-  FloodRecord(
-    'Aurora Boulevard',
-    'Quezon City',
-    20,
-    Evidence.estimated,
-    'Illustrative estimate without a live data provider.',
-  ),
-];
 
 final selectedRoadProvider = NotifierProvider<SelectedRoad, int>(
   SelectedRoad.new,
@@ -61,14 +41,6 @@ class SelectedRoad extends Notifier<int> {
   @override
   int build() => 0;
   void select(int value) => state = value;
-}
-
-final reportsProvider = NotifierProvider<Reports, List<String>>(Reports.new);
-
-class Reports extends Notifier<List<String>> {
-  @override
-  List<String> build() => [];
-  void add(String report) => state = [report, ...state];
 }
 
 String assessment(String vehicle, double? depth) {

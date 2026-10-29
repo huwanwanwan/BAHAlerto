@@ -229,9 +229,32 @@ test('single-file database setup creates all tables with RLS and no sample recor
    create function storage.foldername(text) returns text[] language sql immutable as $$select string_to_array($1,'/')$$;`);
   await db.exec(readFileSync('../backend/schema.sql','utf8'));
   const tables=await db.query<{tablename:string;rowsecurity:boolean}>("select tablename,rowsecurity from pg_tables where schemaname='public'");
-  assert.equal(tables.rows.length,12);
+  assert.equal(tables.rows.length,11);
   assert.ok(tables.rows.every(table=>table.rowsecurity));
   for(const table of tables.rows){assert.equal((await db.query<{count:number}>(`select count(*)::int as count from public.${table.tablename}`)).rows[0].count,0);}
   assert.equal((await db.query<{public:boolean}>("select public from storage.buckets where id='flood-photos'")).rows[0].public,false);
  }finally {await db.close();}
+});
+
+
+test('cleanup refuses populated camera inventory without deleting its records', async () => {
+ const db = new PGlite();
+ try {
+  await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;
+   create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
+   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+   grant usage on schema auth,public,storage to anon,authenticated;
+   create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+   create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text);
+   alter table storage.objects enable row level security;
+   create function storage.foldername(text) returns text[] language sql immutable as $$select string_to_array($1,'/')$$;`);
+  const files = readdirSync('../backend/supabase/migrations').filter(f => f.endsWith('.sql')).sort();
+  for (const file of files.slice(0, 3)) await db.exec(readFileSync(`../backend/supabase/migrations/${file}`, 'utf8'));
+  const road = '20000000-0000-4000-8000-000000000099';
+  await db.exec(`insert into public.road_locations(id,name,latitude,longitude) values('${road}','Existing road',14,120);
+    insert into public.cctv_cameras(road_id,name,source_name) values('${road}','Existing camera','Existing source');`);
+  await assert.rejects(db.exec(readFileSync(`../backend/supabase/migrations/${files[3]}`, 'utf8')), /Camera inventory is populated/);
+  await db.exec('rollback');
+  assert.equal((await db.query<{count:number}>('select count(*)::int as count from public.cctv_cameras')).rows[0].count, 1);
+ } finally { await db.close(); }
 });

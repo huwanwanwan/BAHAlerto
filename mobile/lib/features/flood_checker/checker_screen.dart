@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/data.dart';
+import '../../core/backend.dart';
+import '../settings/settings_screen.dart';
 import '../../shared/widgets.dart';
 import 'comparison_section.dart';
 import 'measurements.dart';
@@ -9,24 +13,31 @@ import '../../core/flood_repository.dart';
 class RoadSelector extends ConsumerWidget {
   const RoadSelector({super.key});
   @override
-  Widget build(BuildContext context, WidgetRef ref) =>
-      DropdownButtonFormField<int>(
-        initialValue: ref.watch(selectedRoadProvider),
-        key: ValueKey(ref.watch(selectedRoadProvider)),
-        isExpanded: true,
-        decoration: const InputDecoration(labelText: 'Sample location'),
-        items: [
-          for (var i = 0; i < records.length; i++)
-            DropdownMenuItem(value: i, child: Text(records[i].road)),
-        ],
-        onChanged: (i) {
-          if (i != null) ref.read(selectedRoadProvider.notifier).select(i);
-        },
-      );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final records = ref.watch(roadsProvider).asData?.value ?? [];
+    final selected = ref.watch(selectedRoadProvider);
+    return DropdownButtonFormField<int>(
+      initialValue: selected < records.length ? selected : null,
+      key: ValueKey('$selected-${records.length}'),
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: 'Road location'),
+      items: [
+        for (var i = 0; i < records.length; i++)
+          DropdownMenuItem(value: i, child: Text(records[i].road)),
+      ],
+      onChanged: (i) {
+        if (i != null) ref.read(selectedRoadProvider.notifier).select(i);
+      },
+    );
+  }
 }
 
 void openChecker(BuildContext context, {VoidCallback? onReport}) {
-  final roadId = ProviderScope.containerOf(context).read(selectedRoadProvider);
+  final container = ProviderScope.containerOf(context);
+  final records = container.read(roadsProvider).asData?.value ?? [];
+  final selected = container.read(selectedRoadProvider);
+  if (records.isEmpty || selected >= records.length) return;
+  final roadId = records[selected].id;
   Navigator.push(
     context,
     MaterialPageRoute<void>(
@@ -49,8 +60,8 @@ void openChecker(BuildContext context, {VoidCallback? onReport}) {
   );
 }
 
-class CheckerScreen extends StatefulWidget {
-  final int roadId;
+class CheckerScreen extends ConsumerStatefulWidget {
+  final String roadId;
   final VoidCallback? onReport;
   final FloodRepository? repository;
   const CheckerScreen({
@@ -60,11 +71,12 @@ class CheckerScreen extends StatefulWidget {
     this.repository,
   });
   @override
-  State<CheckerScreen> createState() => _CheckerScreenState();
+  ConsumerState<CheckerScreen> createState() => _CheckerScreenState();
 }
 
-class _CheckerScreenState extends State<CheckerScreen> {
+class _CheckerScreenState extends ConsumerState<CheckerScreen> {
   late Future<FloodRecord> observation;
+  Timer? expiryTimer;
   @override
   void initState() {
     super.initState();
@@ -72,9 +84,24 @@ class _CheckerScreenState extends State<CheckerScreen> {
   }
 
   void load() {
-    observation = (widget.repository ?? DemoFloodRepository()).roadObservation(
-      widget.roadId,
-    );
+    final repository =
+        widget.repository ?? ref.read<FloodRepository>(floodRepositoryProvider);
+    observation = repository.roadObservation(widget.roadId).then((record) {
+      expiryTimer?.cancel();
+      if (mounted && record.validUntil != null) {
+        final delay = record.validUntil!.difference(DateTime.now().toUtc());
+        expiryTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
+          if (mounted) setState(load);
+        });
+      }
+      return record;
+    });
+  }
+
+  @override
+  void dispose() {
+    expiryTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -103,7 +130,8 @@ class _CheckerScreenState extends State<CheckerScreen> {
       final record = snapshot.data!;
       return PageBody(
         title: record.road,
-        subtitle: 'DEMO MODE - Sample data only. Not live flood information.',
+        subtitle:
+            'Latest published verified observation. Refresh to check for updates.',
         children: [
           const SizedBox(height: 20),
           InfoCard(
@@ -129,7 +157,7 @@ class _CheckerScreenState extends State<CheckerScreen> {
                 Text(
                   record.depth == null
                       ? 'No current observation'
-                      : 'Sample water depth • Flooding indicated',
+                      : 'Observed water depth • Flooding indicated',
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -143,9 +171,11 @@ class _CheckerScreenState extends State<CheckerScreen> {
                 const Divider(height: 32),
                 Text(record.description),
                 const SizedBox(height: 14),
-                const Text(
-                  'Sample observation time: $sampleTime\nStale fixture — not current conditions.',
-                  style: TextStyle(fontSize: 12, color: mutedText),
+                Text(
+                  record.observedAt == null
+                      ? 'No current observation time.'
+                      : 'Observed: ${record.observedAt!.toLocal()}\nValid until: ${record.validUntil!.toLocal()}',
+                  style: const TextStyle(fontSize: 12, color: mutedText),
                 ),
               ],
             ),
@@ -161,8 +191,10 @@ class _CheckerScreenState extends State<CheckerScreen> {
             children: [
               ListTile(
                 title: Text(record.source),
-                subtitle: const Text(
-                  'Fixed demonstration fixture. No live provider connected. $sampleTime',
+                subtitle: Text(
+                  record.observedAt == null
+                      ? 'No current observation.'
+                      : 'Observed: ${record.observedAt!.toLocal()}',
                 ),
               ),
             ],
@@ -173,22 +205,44 @@ class _CheckerScreenState extends State<CheckerScreen> {
             label: const Text('Report Flood Here'),
           ),
           OutlinedButton.icon(
-            icon: const Icon(Icons.flag_outlined),
-            label: const Text('Report incorrect data'),
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Demonstration data'),
-                content: const Text(
-                  'These fixtures are not live observations. Corrections cannot be sent until the reporting backend is connected.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
-                  ),
-                ],
-              ),
+            onPressed: () => setState(load),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Refresh observation'),
+          ),
+          Consumer(
+            builder: (context, ref, _) => OutlinedButton.icon(
+              icon: const Icon(Icons.bookmark_add_outlined),
+              label: const Text('Save location'),
+              onPressed: () async {
+                final user = ref.read(userProvider);
+                if (user == null) {
+                  await showAccount(context);
+                  return;
+                }
+                try {
+                  await ref.read(clientProvider).from('saved_locations').insert(
+                    {'owner_id': user.id, 'road_id': widget.roadId},
+                  );
+                  ref.invalidate(savedProvider);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Location saved.')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          e is PostgrestException && e.code == '23505'
+                              ? 'Location already saved.'
+                              : backendError(e),
+                        ),
+                      ),
+                    );
+                  }
+                }
+              },
             ),
           ),
         ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'shared/widgets.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/backend.dart';
 import 'features/intro/intro_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/flood_checker/checker_screen.dart';
@@ -10,7 +12,29 @@ import 'features/alerts/alerts_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/flood_map/map_screen.dart';
 
-void main() => runApp(const ProviderScope(child: BAHAlertoApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await loadBackendConfiguration();
+  if (backendConfigured) {
+    try {
+      await Supabase.initialize(url: backendUrl, publishableKey: backendKey);
+    } catch (_) {
+      runApp(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Text(
+                'Backend could not start. Check your connection and restart the app.',
+              ),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+  }
+  runApp(const ProviderScope(child: BAHAlertoApp()));
+}
 
 class BAHAlertoApp extends StatelessWidget {
   const BAHAlertoApp({super.key});
@@ -57,20 +81,36 @@ class BAHAlertoApp extends StatelessWidget {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
-    home: const IntroScreen(child: AppShell()),
+    home: const IntroScreen(child: _EntryScreen()),
   );
 }
 
-class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+class _EntryScreen extends StatefulWidget {
+  const _EntryScreen();
   @override
-  State<AppShell> createState() => _AppShellState();
+  State<_EntryScreen> createState() => _EntryScreenState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _EntryScreenState extends State<_EntryScreen> {
+  bool entered = false;
+  void enter() => setState(() => entered = true);
+  @override
+  Widget build(BuildContext context) => entered
+      ? const AppShell()
+      : AccountScreen(onAuthenticated: enter, onGuest: enter);
+}
+
+class AppShell extends ConsumerStatefulWidget {
+  const AppShell({super.key});
+  @override
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
   int tab = 0;
   @override
   Widget build(BuildContext context) {
+    final roads = ref.watch(roadsProvider);
     final pages = [
       HomeScreen(
         onNavigate: (i) {
@@ -119,7 +159,7 @@ class _AppShellState extends State<AppShell> {
             color: const Color(0xFFFFF1D7),
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
             child: const Text(
-              'DEMO MODE  •  Sample data only. Not live flood information.',
+              'Published data - Missing information does not mean safe passage.',
               style: TextStyle(
                 fontSize: 11,
                 color: Color(0xFF805300),
@@ -131,7 +171,29 @@ class _AppShellState extends State<AppShell> {
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 640),
-                child: IndexedStack(index: tab, children: pages),
+                child: Column(
+                  children: [
+                    if (roads.isLoading) const LinearProgressIndicator(),
+                    if (roads.hasError)
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            const Expanded(
+                              child: Text('Road directory unavailable.'),
+                            ),
+                            TextButton(
+                              onPressed: () => ref.invalidate(roadsProvider),
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Expanded(
+                      child: IndexedStack(index: tab, children: pages),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

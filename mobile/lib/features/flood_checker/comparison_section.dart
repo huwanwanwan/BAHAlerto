@@ -62,7 +62,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
               Semantics(
                 label: widget.depth == null
                     ? 'No waterline: no recent flood data'
-                    : 'Sample depth ${lengthLabel(widget.depth!, unit)} compared with person ${lengthLabel(height, unit)}',
+                    : 'Water depth ${lengthLabel(widget.depth!, unit)} compared with person ${lengthLabel(height, unit)}',
                 child: SizedBox(
                   height: 280,
                   child: CustomPaint(
@@ -162,7 +162,7 @@ class _ComparisonSectionState extends State<ComparisonSection> {
               Text(
                 widget.depth == null
                     ? 'No Recent Flood Data'
-                    : 'Sample depth: ${lengthLabel(widget.depth!, unit)}',
+                    : 'Water depth: ${lengthLabel(widget.depth!, unit)}',
               ),
               const SizedBox(height: 12),
               const Row(

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bahalerto/core/data.dart';
+import 'fixtures.dart';
 
 void main() {
   test('Missing depth never establishes passage for any vehicle', () {
@@ -11,7 +12,7 @@ void main() {
   });
   test('Historical hazard has no fabricated current depth', () {
     expect(
-      records
+      fixtureRoads
           .where((r) => r.evidence == Evidence.historical)
           .every((r) => r.depth == null),
       isTrue,

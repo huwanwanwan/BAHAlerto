@@ -17,3 +17,6 @@ build/
 test-results/
 playwright-report/
 
+
+# Local mobile public Supabase configuration
+mobile/assets/backend.local.json

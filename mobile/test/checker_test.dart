@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bahalerto/core/data.dart';
+import 'package:bahalerto/core/backend.dart';
+import 'fixtures.dart';
 import 'package:bahalerto/main.dart';
 import 'package:bahalerto/core/flood_repository.dart';
 import 'package:bahalerto/features/flood_checker/checker_screen.dart';
@@ -10,7 +12,7 @@ import 'package:bahalerto/features/flood_checker/measurements.dart';
 
 class FailedRepository implements FloodRepository {
   @override
-  Future<FloodRecord> roadObservation(int roadId) async =>
+  Future<FloodRecord> roadObservation(String roadId) async =>
       throw StateError('offline');
 }
 
@@ -69,8 +71,14 @@ void main() {
   );
   testWidgets('selected road loads without duplicate selector', (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: Scaffold(body: CheckerScreen(roadId: 1))),
+      ProviderScope(
+        overrides: [
+          roadsProvider.overrideWith((ref) async => fixtureRoads),
+          floodRepositoryProvider.overrideWithValue(FixtureRepository()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: CheckerScreen(roadId: 'road-two')),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -82,8 +90,14 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: Scaffold(body: CheckerScreen(roadId: 2))),
+      ProviderScope(
+        overrides: [
+          roadsProvider.overrideWith((ref) async => fixtureRoads),
+          floodRepositoryProvider.overrideWithValue(FixtureRepository()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: CheckerScreen(roadId: 'road-three')),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -99,7 +113,13 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: AppShell())),
+      ProviderScope(
+        overrides: [
+          roadsProvider.overrideWith((ref) async => fixtureRoads),
+          floodRepositoryProvider.overrideWithValue(FixtureRepository()),
+        ],
+        child: MaterialApp(home: AppShell()),
+      ),
     );
     await tester.tap(find.byIcon(Icons.map_outlined));
     await tester.pumpAndSettle();
@@ -147,9 +167,14 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: CheckerScreen(roadId: 1, repository: FailedRepository()),
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: CheckerScreen(
+              roadId: 'road-two',
+              repository: FailedRepository(),
+            ),
+          ),
         ),
       ),
     );

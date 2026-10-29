@@ -1,3 +1,8 @@
+> Integration update (29 October 2026): mobile now uses the admin Supabase project
+> for accounts, reports and published information. See [mobile setup](mobile/README.md)
+> and [database migration notes](backend/SHARED-DATABASE.md). The historical prototype
+> description below predates this integration.
+
 # BAHAlerto
 
 Flutter + Riverpod mobile interface for flood awareness in the Philippines. **All records are fixed sample data, never live conditions.**

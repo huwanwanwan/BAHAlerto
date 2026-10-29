@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/data.dart';
+import '../../core/backend.dart';
 import '../../shared/widgets.dart';
 import '../flood_checker/checker_screen.dart';
 
@@ -42,12 +43,14 @@ class _VehicleScreenState extends ConsumerState<VehicleScreen> {
             Text(
               assessment(
                 vehicle,
-                records[ref.watch(selectedRoadProvider)].depth,
+                (ref.watch(roadsProvider).asData?.value ?? [])
+                    .elementAtOrNull(ref.watch(selectedRoadProvider))
+                    ?.depth,
               ),
               style: const TextStyle(height: 1.7),
             ),
             const SizedBox(height: 12),
-            const Tag('Sample assessment • No safe-to-cross rating'),
+            const Tag('Flood assessment • No safe-to-cross rating'),
           ],
         ),
       ),

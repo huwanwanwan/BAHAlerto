@@ -1,3 +1,9 @@
+> Mobile integration update: see [shared database and migration instructions](SHARED-DATABASE.md).
+> The fourth migration normalizes account ownership and removes the unused,
+> empty camera inventory. The owner reported applying it on 29 October 2026;
+> its cloud constraints have not been independently inspected in this session.
+> The older 12-table description below describes migrations 001 through 003.
+
 # BAHAlerto database setup
 
 The deployable PostgreSQL schema is ready in [schema.sql](schema.sql). It is designed for the shared Supabase project used by Next.js and Flutter. **Connection update (29 October 2026):** the owner reported successfully applying the schema and administrator bootstrap in Supabase. The admin website is now configured through ignored `admin/.env.local`. Read-only checks confirmed public table access, reachable Supabase Auth and denial of anonymous private-report reads. Authenticated administrator workflows still require the owner to sign in.
