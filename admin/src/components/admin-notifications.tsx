@@ -6,7 +6,7 @@ import { Bell, CheckCheck, RefreshCw } from "lucide-react";
 import { loadNotifications, markNotificationsRead } from "@/app/notification-actions";
 
 type NotificationData = Awaited<ReturnType<typeof loadNotifications>>;
-export function AdminNotifications({ connected }: { connected: boolean }) {
+export function AdminNotifications({ connected, onRegistrationCountChange }: { connected: boolean; onRegistrationCountChange: (count: number) => void }) {
   const [data, setData] = useState<NotificationData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [marking, setMarking] = useState(false);
@@ -19,12 +19,13 @@ export function AdminNotifications({ connected }: { connected: boolean }) {
     try {
       const result = await loadNotifications();
       setData(result); setError(result.error);
+      if (!result.error) onRegistrationCountChange(result.registrations);
       const newest = result.items[0]?.id ?? "";
       if (latest.current !== null && newest !== latest.current && !result.error) router.refresh();
       latest.current = newest;
     } catch { setError("Could not load notifications. Please retry."); }
     finally { busy.current = false; }
-  }, [connected, router]);
+  }, [connected, router, onRegistrationCountChange]);
   useEffect(() => {
     const tick = () => { if (!document.hidden) void refresh(); };
     tick();

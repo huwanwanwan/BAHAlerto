@@ -97,3 +97,9 @@ open Admin > Users to check the shared UUID and Last sign-in. Open the bell usin
 a different authorized admin account. Submit a test report and check its event.
 Mark it read, reload, and verify the unread count stays reduced. A normal mobile
 account must not be able to query other users' notifications.
+
+The Manage Users sidebar item also shows a red unread registration count.
+It counts `account_registered` events only, independently of the latest-20 inbox
+limit. Marking those notifications read in the bell updates both badges. Sign-in
+and report events still count toward the bell but do not inflate the Users badge.
+No additional SQL migration is needed for this sidebar badge once 005 is applied.

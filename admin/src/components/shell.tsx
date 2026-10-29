@@ -44,6 +44,7 @@ export function Shell({
 }) {
   const path = usePathname(),
     [collapsed, setCollapsed] = useState(false);
+  const [newUsers, setNewUsers] = useState(0);
   const navigation = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     const nav = navigation.current;
@@ -105,6 +106,7 @@ export function Shell({
               const active = path === `/admin/${slug}` || path.startsWith(`/admin/${slug}/`);
               return <Link prefetch key={slug} title={item.title} href={`/admin/${slug}`} className={active ? "active" : ""} aria-current={active ? "page" : undefined}>
                 <Icon size={21}/><span className="nav-label">{item.title}</span>
+                {slug === "users" && newUsers > 0 && <span className="nav-unread-count" aria-label={`${newUsers} unread user registrations`}>{newUsers > 99 ? "99+" : newUsers}</span>}
               </Link>;
             })}
           </section>)}
@@ -136,7 +138,7 @@ export function Shell({
             </span>
           </div>
           <div className="header-right">
-            <AdminNotifications connected={connected} />
+            <AdminNotifications connected={connected} onRegistrationCountChange={setNewUsers} />
             <Link href="/admin/settings" className="avatar" aria-label="Account settings" title={email ?? "Account settings"}>BA</Link>
           </div>
         </header>
