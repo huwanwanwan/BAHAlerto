@@ -720,7 +720,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Expanded(
                       child: _FloodReportCard(
-                        imagePath: 'assets/flood-report-1.png',
+                        imagePath: 'assets/flood-street-ph-1.png',
                         status: 'Verified',
                         statusColor: const Color(0xFF1976D2),
                         statusBgColor: const Color(0xFFE3F2FD),
@@ -734,7 +734,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _FloodReportCard(
-                        imagePath: 'assets/flood-report-2.png',
+                        imagePath: 'assets/flood-street-ph-2.png',
                         status: 'Pending',
                         statusColor: const Color(0xFFF57C00),
                         statusBgColor: const Color(0xFFFFF3E0),
@@ -1355,41 +1355,45 @@ class _FloodReportCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: 2.2,
-              // These supplied 90px thumbnails include UI below the photo.
-              // Display only the photo region, without altering the source files.
-              child: ClipRect(
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: 86,
-                    height: 34,
-                    child: ClipRect(
-                      child: OverflowBox(
-                        alignment: Alignment.topCenter,
-                        minWidth: 90,
-                        maxWidth: 90,
-                        minHeight: 90,
-                        maxHeight: 90,
-                        child: Image.asset(
-                          imagePath,
-                          width: 90,
-                          height: 90,
-                          fit: BoxFit.contain,
-                          excludeFromSemantics: true,
-                          errorBuilder: (_, _, _) => const ColoredBox(
-                            color: Color(0xFFE8F5E9),
-                            child: Center(
-                              child: Icon(
-                                Icons.water_rounded,
-                                color: Color(0xFF2E7D32),
-                              ),
-                            ),
-                          ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    alignment: const Alignment(0, 0.15),
+                    cacheWidth: 700,
+                    semanticLabel:
+                        'AI-generated illustration of a flooded Philippine street',
+                    errorBuilder: (_, _, _) => const ColoredBox(
+                      color: Color(0xFFE8F5E9),
+                      child: Center(
+                        child: Icon(
+                          Icons.water_rounded,
+                          color: Color(0xFF2E7D32),
                         ),
                       ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    left: 6,
+                    bottom: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xB3000000),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'AI illustration',
+                        style: TextStyle(fontSize: 9, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
