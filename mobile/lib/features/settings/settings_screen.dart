@@ -405,7 +405,6 @@ class _AccountHero extends StatelessWidget {
         ),
         child: LayoutBuilder(
           builder: (context, box) {
-            final artWidth = (box.maxWidth * .42).clamp(128.0, 194.0);
             final top = MediaQuery.paddingOf(context).top;
             return Stack(
               children: [
@@ -430,6 +429,22 @@ class _AccountHero extends StatelessWidget {
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Color(0x0CFFFFFF),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 8,
+                  top: top + 12,
+                  bottom: 10,
+                  child: ExcludeSemantics(
+                    child: Image.asset(
+                      'assets/stickers/user-login-icon.png',
+                      fit: BoxFit.contain,
+                      alignment: Alignment.centerRight,
+                      cacheWidth: 1120,
+                      filterQuality: FilterQuality.medium,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
                     ),
                   ),
                 ),
@@ -471,24 +486,6 @@ class _AccountHero extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
-                ),
-                Positioned(
-                  right: 12,
-                  top: top + 24,
-                  width: artWidth,
-                  height: height - top - 38,
-                  child: ExcludeSemantics(
-                    child: Image.asset(
-                      'assets/stickers/bahalerto-commuter-flat.png',
-                      fit: BoxFit.contain,
-                      cacheWidth: 660,
-                      filterQuality: FilterQuality.medium,
-                      errorBuilder: (_, _, _) => Image.asset(
-                        'assets/logo/pin.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
                   ),
                 ),
               ],

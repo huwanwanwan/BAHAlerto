@@ -53,8 +53,8 @@ The preview video is reference material and is not bundled into the application.
 ## Branded account screen
 
 The intro opens a white login card behind a green header with rounded bottom
-corners. The foreground header uses a flat illustrated commuter/car/location-pin sticker
-with a transparent background, in the style of Canva illustration elements.
-See [sticker provenance and prompt](design/login-sticker.md). Login and registration retain Supabase authentication, autofill,
+corners. The foreground header uses the owner-provided `user-login-icon.png`, preserving
+its transparency and full image with right-aligned `BoxFit.contain`. The title
+and tagline sit above its open left side. See [artwork notes](design/login-sticker.md). Login and registration retain Supabase authentication, autofill,
 validation, password visibility, email-confirmation messages and guest access.
 The scrollable layout accommodates small phones, larger text and the keyboard.
