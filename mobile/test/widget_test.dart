@@ -85,6 +85,18 @@ void main() {
       expect(tester.takeException(), isNull);
     }
     await tester.pump(const Duration(milliseconds: 700));
+    // Asset decoding uses real asynchronous work; allow it to settle before
+    // asserting the automatically completed timeline, without pressing Skip.
+    for (
+      var frame = 0;
+      frame < 30 && find.text('Skip intro').evaluate().isNotEmpty;
+      frame++
+    ) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+    }
     await tester.pumpAndSettle();
     expect(find.text('Skip intro'), findsNothing);
     expect(find.text('Welcome back'), findsOneWidget);

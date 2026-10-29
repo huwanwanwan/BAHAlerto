@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'shared/widgets.dart';
+import 'shared/phone_viewport.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/backend.dart';
 import 'features/intro/intro_screen.dart';
@@ -14,6 +16,15 @@ import 'features/flood_map/map_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
   await loadBackendConfiguration();
   if (backendConfigured) {
     try {
@@ -41,6 +52,8 @@ class BAHAlertoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'BAHAlerto',
+    builder: (context, child) =>
+        PhoneViewport(child: child ?? const SizedBox.shrink()),
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       useMaterial3: true,

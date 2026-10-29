@@ -69,3 +69,14 @@ and `mobile/lib/main.dart` instead of an SDK/example package.
 If an existing preview cached an asset that was replaced, stop it before running
 `flutter clean` and `flutter pub get` from `C:/BAHAlerto/mobile`, then start
 FlutterFrame again. Do not start a second preview on port 8686 simultaneously.
+
+## Status area and entry motion
+
+A shared `PhoneViewport` reserves the native system top inset for every route.
+Desktop web phone previews up to 640 px wide additionally show a persistent
+preview bar: current local time plus illustrative signal, Wi-Fi and battery.
+These indicators are preview decoration, not hardware measurements. Native
+phones and mobile browsers use their real OS status bar instead of a duplicate.
+The login artwork appears on the left and the title/tagline on the right. The
+artwork slides from right to left, then the text fades/slides in. Splash-to-login
+also fades/slides gently. Reduced-motion settings bypass these movements.

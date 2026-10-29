@@ -385,116 +385,176 @@ class _AccountState extends ConsumerState<AccountScreen> {
   }
 }
 
-class _AccountHero extends StatelessWidget {
+class _AccountHero extends StatefulWidget {
   final double height;
   const _AccountHero({required this.height});
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    key: const ValueKey('curved-login-header'),
-    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(38)),
-    child: SizedBox(
-      height: height,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF004D35), Color(0xFF238C45), Color(0xFFA4CD49)],
-            stops: [0, .56, 1],
+  State<_AccountHero> createState() => _AccountHeroState();
+}
+
+class _AccountHeroState extends State<_AccountHero>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController entrance = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 850),
+  );
+  late final Animation<double> image = entrance.drive(
+    CurveTween(curve: const Interval(0, .78, curve: Curves.easeOutCubic)),
+  );
+  late final Animation<double> text = entrance.drive(
+    CurveTween(curve: const Interval(.20, 1, curve: Curves.easeOutCubic)),
+  );
+  bool started = false;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      entrance.value = 1;
+    } else if (!started) {
+      started = true;
+      entrance.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    entrance.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      key: const ValueKey('curved-login-header'),
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(38)),
+      child: SizedBox(
+        height: widget.height,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF004D35), Color(0xFF238C45), Color(0xFFA4CD49)],
+              stops: [0, .56, 1],
+            ),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                left: -65,
+                top: -50,
+                child: Container(
+                  width: 220,
+                  height: 220,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0x0FFFFFFF),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: -20,
+                bottom: -90,
+                child: Container(
+                  width: 220,
+                  height: 220,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0x0CFFFFFF),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  4,
+                  Navigator.canPop(context) ? 44 : 16,
+                  18,
+                  14,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 11,
+                      child: FadeTransition(
+                        opacity: image,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(.42, 0),
+                            end: Offset.zero,
+                          ).animate(image),
+                          child: Image.asset(
+                            'assets/stickers/user-login-icon.png',
+                            key: const ValueKey('login-header-artwork'),
+                            fit: BoxFit.contain,
+                            cacheWidth: 900,
+                            excludeFromSemantics: true,
+                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      flex: 9,
+                      child: FadeTransition(
+                        opacity: text,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(.12, .08),
+                            end: Offset.zero,
+                          ).animate(text),
+                          child: Column(
+                            key: const ValueKey('login-header-copy'),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'BAHAlerto',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 26,
+                                    letterSpacing: -.8,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                'Be aware.\nTravel prepared.',
+                                style: TextStyle(
+                                  color: Color(0xFFEAF5D9),
+                                  fontSize: 13,
+                                  height: 1.55,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (Navigator.canPop(context))
+                Positioned(
+                  top: 5,
+                  left: 10,
+                  child: IconButton(
+                    tooltip: 'Back',
+                    onPressed: () => Navigator.pop(context),
+                    style: IconButton.styleFrom(foregroundColor: Colors.white),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
+                ),
+            ],
           ),
         ),
-        child: LayoutBuilder(
-          builder: (context, box) {
-            final top = MediaQuery.paddingOf(context).top;
-            return Stack(
-              children: [
-                Positioned(
-                  right: -35,
-                  top: -50,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0x0FFFFFFF),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 45,
-                  bottom: -70,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0x0CFFFFFF),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 8,
-                  top: top + 12,
-                  bottom: 10,
-                  child: ExcludeSemantics(
-                    child: Image.asset(
-                      'assets/stickers/user-login-icon.png',
-                      fit: BoxFit.contain,
-                      alignment: Alignment.centerRight,
-                      cacheWidth: 1120,
-                      filterQuality: FilterQuality.medium,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                    ),
-                  ),
-                ),
-                if (Navigator.canPop(context))
-                  Positioned(
-                    top: top + 8,
-                    left: 12,
-                    child: IconButton(
-                      tooltip: 'Back',
-                      onPressed: () => Navigator.pop(context),
-                      style: IconButton.styleFrom(
-                        foregroundColor: Colors.white,
-                      ),
-                      icon: const Icon(Icons.arrow_back_rounded),
-                    ),
-                  ),
-                Positioned(
-                  left: 26,
-                  top: top + (Navigator.canPop(context) ? 61 : 53),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'BAHAlerto',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          letterSpacing: -.8,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Be aware.\nTravel prepared.',
-                        style: TextStyle(
-                          color: Color(0xFFEAF5D9),
-                          fontSize: 13,
-                          height: 1.55,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class SettingsScreen extends ConsumerWidget {
