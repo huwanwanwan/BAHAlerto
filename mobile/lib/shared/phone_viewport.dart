@@ -5,10 +5,90 @@ import 'package:flutter/services.dart';
 
 /// The desktop web phone preview has no OS chrome. Native/mobile browsers keep
 /// their actual status bar; all routes share the same protected top inset.
-class PhoneViewport extends StatelessWidget {
+const loginHeaderGradient = LinearGradient(
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+  colors: [Color(0xFF004D35), Color(0xFF238C45), Color(0xFFA4CD49)],
+  stops: [0, .56, 1],
+);
+
+class _PhoneStatusController extends ChangeNotifier {
+  final owners = <Object>{};
+  bool disposed = false;
+  bool get branded => owners.isNotEmpty;
+  void update(Object owner, bool attach) {
+    final changed = attach ? owners.add(owner) : owners.remove(owner);
+    if (changed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!disposed) notifyListeners();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    disposed = true;
+    super.dispose();
+  }
+}
+
+class _PhoneStatusBinding extends InheritedWidget {
+  final _PhoneStatusController controller;
+  const _PhoneStatusBinding({required this.controller, required super.child});
+  static _PhoneStatusController? of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<_PhoneStatusBinding>()
+      ?.controller;
+  @override
+  bool updateShouldNotify(_PhoneStatusBinding oldWidget) =>
+      controller != oldWidget.controller;
+}
+
+/// Registers a branded header while retaining the shared safe system inset.
+class HeaderStatusScope extends StatefulWidget {
+  final Widget child;
+  const HeaderStatusScope({super.key, required this.child});
+  @override
+  State<HeaderStatusScope> createState() => _HeaderStatusScopeState();
+}
+
+class _HeaderStatusScopeState extends State<HeaderStatusScope> {
+  _PhoneStatusController? controller;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final next = _PhoneStatusBinding.of(context);
+    if (next == controller) return;
+    controller?.update(this, false);
+    controller = next;
+    controller?.update(this, true);
+  }
+
+  @override
+  void dispose() {
+    controller?.update(this, false);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+class PhoneViewport extends StatefulWidget {
   final Widget child;
   final bool? showPreviewStatus;
   const PhoneViewport({super.key, required this.child, this.showPreviewStatus});
+  @override
+  State<PhoneViewport> createState() => _PhoneViewportState();
+}
+
+class _PhoneViewportState extends State<PhoneViewport> {
+  final controller = _PhoneStatusController();
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final desktop = ![
@@ -16,37 +96,56 @@ class PhoneViewport extends StatelessWidget {
       TargetPlatform.iOS,
     ].contains(defaultTargetPlatform);
     final preview =
-        showPreviewStatus ??
+        widget.showPreviewStatus ??
         (kIsWeb && desktop && MediaQuery.sizeOf(context).width <= 640);
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark,
-      child: ColoredBox(
-        color: Colors.white,
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              if (preview)
-                const DefaultTextStyle(
-                  style: TextStyle(
-                    fontFamily: 'Arial',
-                    fontSize: 12,
-                    color: Color(0xFF14261D),
-                    decoration: TextDecoration.none,
-                  ),
-                  child: _PreviewStatusBar(),
+    return _PhoneStatusBinding(
+      controller: controller,
+      child: AnimatedBuilder(
+        animation: controller,
+        child: widget.child,
+        builder: (context, child) {
+          final branded = controller.branded;
+          final foreground = branded ? Colors.white : const Color(0xFF14261D);
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: branded
+                ? SystemUiOverlayStyle.light.copyWith(
+                    statusBarColor: Colors.transparent,
+                  )
+                : SystemUiOverlayStyle.dark,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                gradient: branded ? loginHeaderGradient : null,
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    if (preview)
+                      DefaultTextStyle(
+                        style: TextStyle(
+                          fontFamily: 'Arial',
+                          fontSize: 12,
+                          color: foreground,
+                          decoration: TextDecoration.none,
+                        ),
+                        child: _PreviewStatusBar(foreground: foreground),
+                      ),
+                    Expanded(child: child!),
+                  ],
                 ),
-              Expanded(child: child),
-            ],
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
 class _PreviewStatusBar extends StatefulWidget {
-  const _PreviewStatusBar();
+  final Color foreground;
+  const _PreviewStatusBar({required this.foreground});
   @override
   State<_PreviewStatusBar> createState() => _PreviewStatusBarState();
 }
@@ -85,17 +184,17 @@ class _PreviewStatusBarState extends State<_PreviewStatusBar> {
             children: [
               Text(
                 time,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF14261D),
+                  color: widget.foreground,
                 ),
               ),
               const Spacer(),
-              const Icon(
+              Icon(
                 Icons.signal_cellular_alt_rounded,
                 size: 15,
-                color: Color(0xFF14261D),
+                color: widget.foreground,
               ),
               const SizedBox(width: 4),
               const Text(
@@ -103,21 +202,17 @@ class _PreviewStatusBarState extends State<_PreviewStatusBar> {
                 style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 7),
-              const Icon(
-                Icons.wifi_rounded,
-                size: 15,
-                color: Color(0xFF14261D),
-              ),
+              Icon(Icons.wifi_rounded, size: 15, color: widget.foreground),
               const SizedBox(width: 7),
               const Text(
                 '100%',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 2),
-              const Icon(
+              Icon(
                 Icons.battery_full_rounded,
                 size: 17,
-                color: Color(0xFF14261D),
+                color: widget.foreground,
               ),
             ],
           ),

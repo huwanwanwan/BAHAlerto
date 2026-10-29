@@ -80,3 +80,8 @@ phones and mobile browsers use their real OS status bar instead of a duplicate.
 The login artwork appears on the left and the title/tagline on the right. The
 artwork slides from right to left, then the text fades/slides in. Splash-to-login
 also fades/slides gently. Reduced-motion settings bypass these movements.
+
+The branded login header continues its green gradient through the status area
+with light status indicators. Artwork, copy and controls retain a separate safe
+top inset, so they cannot cover the clock, signal or battery. Leaving login
+restores the normal light status background for the inner app screens.

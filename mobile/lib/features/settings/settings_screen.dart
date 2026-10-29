@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/backend.dart';
 import '../../shared/widgets.dart';
+import '../../shared/phone_viewport.dart';
 import '../../shared/backend_list.dart';
 
 Future<void> showAccount(BuildContext context, {bool register = false}) =>
@@ -115,267 +116,276 @@ class _AccountState extends ConsumerState<AccountScreen> {
     final compact = MediaQuery.sizeOf(context).height < 650;
     final heroHeight =
         (compact ? 205.0 : 254.0) + MediaQuery.paddingOf(context).top;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: heroHeight - 30),
-                    child: Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.fromLTRB(26, 56, 26, 24),
-                      child: AutofillGroup(
-                        child: Form(
-                          key: form,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                widget.register
-                                    ? 'Create an account'
-                                    : 'Welcome back',
-                                style: const TextStyle(
-                                  fontSize: 27,
-                                  height: 1.2,
-                                  fontWeight: FontWeight.w800,
-                                  color: ink,
-                                  letterSpacing: -.7,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                widget.register
-                                    ? 'Join a community that looks out for each other.'
-                                    : 'Stay informed. Look out for your community.',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  height: 1.5,
-                                  color: mutedText,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              if (widget.register) ...[
-                                TextFormField(
-                                  controller: name,
-                                  enabled: !busy,
-                                  autofillHints: const [AutofillHints.name],
-                                  textInputAction: TextInputAction.next,
-                                  decoration: fieldDecoration(
-                                    'Full name',
-                                    Icons.person_outline_rounded,
+    return HeaderStatusScope(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: heroHeight - 30),
+                      child: Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.fromLTRB(26, 56, 26, 24),
+                        child: AutofillGroup(
+                          child: Form(
+                            key: form,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  widget.register
+                                      ? 'Create an account'
+                                      : 'Welcome back',
+                                  style: const TextStyle(
+                                    fontSize: 27,
+                                    height: 1.2,
+                                    fontWeight: FontWeight.w800,
+                                    color: ink,
+                                    letterSpacing: -.7,
                                   ),
-                                  maxLength: 200,
-                                  validator: (v) => (v?.trim().isEmpty ?? true)
-                                      ? 'Enter your name.'
-                                      : null,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  widget.register
+                                      ? 'Join a community that looks out for each other.'
+                                      : 'Stay informed. Look out for your community.',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    height: 1.5,
+                                    color: mutedText,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                if (widget.register) ...[
+                                  TextFormField(
+                                    controller: name,
+                                    enabled: !busy,
+                                    autofillHints: const [AutofillHints.name],
+                                    textInputAction: TextInputAction.next,
+                                    decoration: fieldDecoration(
+                                      'Full name',
+                                      Icons.person_outline_rounded,
+                                    ),
+                                    maxLength: 200,
+                                    validator: (v) =>
+                                        (v?.trim().isEmpty ?? true)
+                                        ? 'Enter your name.'
+                                        : null,
+                                  ),
+                                  const SizedBox(height: 14),
+                                ],
+                                TextFormField(
+                                  controller: email,
+                                  enabled: !busy,
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  autofillHints: const [AutofillHints.email],
+                                  autocorrect: false,
+                                  decoration: fieldDecoration(
+                                    'Email',
+                                    Icons.mail_outline_rounded,
+                                  ),
+                                  validator: (v) =>
+                                      RegExp(
+                                        r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                                      ).hasMatch(v?.trim() ?? '')
+                                      ? null
+                                      : 'Enter a valid email.',
                                 ),
                                 const SizedBox(height: 14),
-                              ],
-                              TextFormField(
-                                controller: email,
-                                enabled: !busy,
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                                autofillHints: const [AutofillHints.email],
-                                autocorrect: false,
-                                decoration: fieldDecoration(
-                                  'Email',
-                                  Icons.mail_outline_rounded,
-                                ),
-                                validator: (v) =>
-                                    RegExp(
-                                      r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
-                                    ).hasMatch(v?.trim() ?? '')
-                                    ? null
-                                    : 'Enter a valid email.',
-                              ),
-                              const SizedBox(height: 14),
-                              TextFormField(
-                                controller: password,
-                                enabled: !busy,
-                                obscureText: !passwordVisible,
-                                autocorrect: false,
-                                enableSuggestions: false,
-                                textInputAction: TextInputAction.done,
-                                autofillHints: [
-                                  widget.register
-                                      ? AutofillHints.newPassword
-                                      : AutofillHints.password,
-                                ],
-                                onFieldSubmitted: (_) {
-                                  if (!busy && backendConfigured) submit();
-                                },
-                                decoration: fieldDecoration(
-                                  'Password',
-                                  Icons.lock_outline_rounded,
-                                  suffix: IconButton(
-                                    tooltip: passwordVisible
-                                        ? 'Hide password'
-                                        : 'Show password',
-                                    onPressed: busy
-                                        ? null
-                                        : () => setState(
-                                            () => passwordVisible =
-                                                !passwordVisible,
-                                          ),
-                                    icon: Icon(
-                                      passwordVisible
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                      size: 20,
-                                      color: mutedText,
+                                TextFormField(
+                                  controller: password,
+                                  enabled: !busy,
+                                  obscureText: !passwordVisible,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                  textInputAction: TextInputAction.done,
+                                  autofillHints: [
+                                    widget.register
+                                        ? AutofillHints.newPassword
+                                        : AutofillHints.password,
+                                  ],
+                                  onFieldSubmitted: (_) {
+                                    if (!busy && backendConfigured) submit();
+                                  },
+                                  decoration: fieldDecoration(
+                                    'Password',
+                                    Icons.lock_outline_rounded,
+                                    suffix: IconButton(
+                                      tooltip: passwordVisible
+                                          ? 'Hide password'
+                                          : 'Show password',
+                                      onPressed: busy
+                                          ? null
+                                          : () => setState(
+                                              () => passwordVisible =
+                                                  !passwordVisible,
+                                            ),
+                                      icon: Icon(
+                                        passwordVisible
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                        size: 20,
+                                        color: mutedText,
+                                      ),
                                     ),
                                   ),
+                                  validator: (v) =>
+                                      (v?.length ?? 0) <
+                                          (widget.register ? 12 : 1)
+                                      ? 'Enter ${widget.register ? 'at least 12 characters' : 'your password'}.'
+                                      : null,
                                 ),
-                                validator: (v) =>
-                                    (v?.length ?? 0) <
-                                        (widget.register ? 12 : 1)
-                                    ? 'Enter ${widget.register ? 'at least 12 characters' : 'your password'}.'
-                                    : null,
-                              ),
-                              const SizedBox(height: 20),
-                              if (message != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: Semantics(
-                                    liveRegion: true,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(13),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF0F6ED),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        message!,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          height: 1.5,
-                                          color: ink,
+                                const SizedBox(height: 20),
+                                if (message != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: Semantics(
+                                      liveRegion: true,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(13),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF0F6ED),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          message!,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            height: 1.5,
+                                            color: ink,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              FilledButton(
-                                onPressed: busy || !backendConfigured
-                                    ? null
-                                    : submit,
-                                style: FilledButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(52),
-                                  backgroundColor: primaryGreen,
-                                  disabledBackgroundColor: const Color(
-                                    0xFFAAC8AE,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  textStyle: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                child: Text(
-                                  busy
-                                      ? 'Please wait...'
-                                      : widget.register
-                                      ? 'Register'
-                                      : 'Log In',
-                                ),
-                              ),
-                              if (!widget.register)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: TextButton(
-                                    onPressed: busy
-                                        ? null
-                                        : () => showAccount(
-                                            context,
-                                            register: true,
-                                          ),
-                                    child: const Text('Create an account'),
-                                  ),
-                                ),
-                              if (widget.onAuthenticated != null &&
-                                  ref.watch(userProvider) != null)
-                                OutlinedButton(
-                                  onPressed: busy
+                                FilledButton(
+                                  onPressed: busy || !backendConfigured
                                       ? null
-                                      : widget.onAuthenticated,
-                                  child: const Text(
-                                    'Continue with signed-in account',
+                                      : submit,
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(52),
+                                    backgroundColor: primaryGreen,
+                                    disabledBackgroundColor: const Color(
+                                      0xFFAAC8AE,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    busy
+                                        ? 'Please wait...'
+                                        : widget.register
+                                        ? 'Register'
+                                        : 'Log In',
                                   ),
                                 ),
-                              if (widget.onGuest != null) ...[
-                                const SizedBox(height: 4),
-                                const Row(
-                                  children: [
-                                    Expanded(
-                                      child: Divider(color: Color(0xFFE6ECE4)),
+                                if (!widget.register)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: TextButton(
+                                      onPressed: busy
+                                          ? null
+                                          : () => showAccount(
+                                              context,
+                                              register: true,
+                                            ),
+                                      child: const Text('Create an account'),
                                     ),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                      ),
-                                      child: Text(
-                                        'or',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: mutedText,
+                                  ),
+                                if (widget.onAuthenticated != null &&
+                                    ref.watch(userProvider) != null)
+                                  OutlinedButton(
+                                    onPressed: busy
+                                        ? null
+                                        : widget.onAuthenticated,
+                                    child: const Text(
+                                      'Continue with signed-in account',
+                                    ),
+                                  ),
+                                if (widget.onGuest != null) ...[
+                                  const SizedBox(height: 4),
+                                  const Row(
+                                    children: [
+                                      Expanded(
+                                        child: Divider(
+                                          color: Color(0xFFE6ECE4),
                                         ),
                                       ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                        ),
+                                        child: Text(
+                                          'or',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: mutedText,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Divider(
+                                          color: Color(0xFFE6ECE4),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TextButton(
+                                    onPressed: busy ? null : widget.onGuest,
+                                    child: const Text('Continue as guest'),
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
+                                const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.shield_outlined,
+                                      size: 14,
+                                      color: Color(0xFF81977F),
                                     ),
-                                    Expanded(
-                                      child: Divider(color: Color(0xFFE6ECE4)),
+                                    SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        'Together, a more prepared community.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xFF81977F),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                TextButton(
-                                  onPressed: busy ? null : widget.onGuest,
-                                  child: const Text('Continue as guest'),
-                                ),
                               ],
-                              const SizedBox(height: 12),
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.shield_outlined,
-                                    size: 14,
-                                    color: Color(0xFF81977F),
-                                  ),
-                                  SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      'Together, a more prepared community.',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Color(0xFF81977F),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: _AccountHero(height: heroHeight),
-                  ),
-                ],
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: _AccountHero(height: heroHeight),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -430,40 +440,9 @@ class _AccountHeroState extends State<_AccountHero>
       child: SizedBox(
         height: widget.height,
         child: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF004D35), Color(0xFF238C45), Color(0xFFA4CD49)],
-              stops: [0, .56, 1],
-            ),
-          ),
+          decoration: const BoxDecoration(gradient: loginHeaderGradient),
           child: Stack(
             children: [
-              Positioned(
-                left: -65,
-                top: -50,
-                child: Container(
-                  width: 220,
-                  height: 220,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0x0FFFFFFF),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: -20,
-                bottom: -90,
-                child: Container(
-                  width: 220,
-                  height: 220,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0x0CFFFFFF),
-                  ),
-                ),
-              ),
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   4,

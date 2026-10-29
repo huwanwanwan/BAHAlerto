@@ -37,6 +37,56 @@ void main() {
       greaterThanOrEqualTo(36),
     );
   });
+  testWidgets('login colors the status area while its artwork stays below it', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          builder: (_, child) =>
+              PhoneViewport(showPreviewStatus: true, child: child!),
+          home: Builder(
+            builder: (context) => AccountScreen(
+              onGuest: () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => const Scaffold(body: Text('Home')),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final status = find.byKey(const ValueKey('phone-preview-status'));
+    final statusBottom = tester.getBottomLeft(status).dy;
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.wifi_rounded)).color,
+      Colors.white,
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('login-header-artwork'))).dy,
+      greaterThanOrEqualTo(statusBottom),
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('login-header-copy'))).dy,
+      greaterThanOrEqualTo(statusBottom),
+    );
+    await tester.ensureVisible(find.text('Continue as guest'));
+    await tester.tap(find.text('Continue as guest'));
+    await tester.pumpAndSettle();
+    expect(find.text('Home'), findsOneWidget);
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.wifi_rounded)).color,
+      const Color(0xFF14261D),
+    );
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('native top inset is reserved without a duplicate status bar', (
     tester,
   ) async {
