@@ -42,6 +42,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       if (entry.key == 'home') {
+        final map = find.byKey(const ValueKey('home-location-map'));
+        final button = find.byKey(const ValueKey('home-view-map-button'));
+        expect(
+          tester.getBottomLeft(map).dy,
+          closeTo(tester.getBottomLeft(button).dy, 1),
+        );
         final viewport = find.byType(SingleChildScrollView).first;
         expect(tester.getBottomLeft(viewport).dy, greaterThanOrEqualTo(639));
         expect(tester.getSize(viewport).height, greaterThan(450));
@@ -58,7 +64,6 @@ void main() {
         if (entry.key == 'home') {
           expect(tester.getTopLeft(bell).dy, lessThan(bellPosition!.dy));
           expect(find.text('Guest'), findsOneWidget);
-
         }
       }
     });
