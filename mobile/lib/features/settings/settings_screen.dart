@@ -405,7 +405,7 @@ class _AccountHero extends StatelessWidget {
         ),
         child: LayoutBuilder(
           builder: (context, box) {
-            final artWidth = (box.maxWidth * .46).clamp(140.0, 220.0);
+            final artWidth = (box.maxWidth * .42).clamp(128.0, 194.0);
             final top = MediaQuery.paddingOf(context).top;
             return Stack(
               children: [
@@ -480,7 +480,7 @@ class _AccountHero extends StatelessWidget {
                   height: height - top - 38,
                   child: ExcludeSemantics(
                     child: Image.asset(
-                      'assets/stickers/bahalerto-commuter.png',
+                      'assets/stickers/bahalerto-commuter-flat.png',
                       fit: BoxFit.contain,
                       cacheWidth: 660,
                       filterQuality: FilterQuality.medium,
