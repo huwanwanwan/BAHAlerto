@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/backend.dart';
 import '../../core/data.dart';
 import '../../shared/widgets.dart';
+import '../../shared/module_page.dart';
 import '../../shared/backend_list.dart';
 import '../settings/settings_screen.dart';
 
@@ -55,28 +56,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   Future<void> submit() async {
     if (ref.read(userProvider) == null) {
-      await showDialog<void>(
-        context: context,
-        builder: (dialog) => AlertDialog(
-          title: const Text('Login Required'),
-          content: const Text(
-            'Sign in to send a report for administrator review.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialog);
-                showAccount(context);
-              },
-              child: const Text('Log In'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialog),
-              child: const Text('Continue as Guest'),
-            ),
-          ],
-        ),
-      );
+      await showAccount(context);
       return;
     }
     if (!form.currentState!.validate()) return;
@@ -185,10 +165,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final roads = ref.watch(roadsProvider).asData?.value ?? [];
     final selected = ref.watch(selectedRoadProvider);
     final user = ref.watch(userProvider);
-    return PageBody(
-      title: 'Community reports',
+    return ModulePage(
+      title: 'Report flood',
       subtitle:
-          'Reports are private until reviewed. They do not automatically become published flood observations.',
+          'Share what you see. Your report is sent privately for administrator review.',
       children: [
         InfoCard(
           child: Form(
@@ -196,6 +176,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const ModuleSectionTitle('Flood details'),
                 if (roads.isEmpty)
                   const Text(
                     'No published roads available. An administrator must publish a road before reports can be submitted.',
@@ -210,7 +191,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     ),
                     items: [
                       for (var i = 0; i < roads.length; i++)
-                        DropdownMenuItem(value: i, child: Text(roads[i].road)),
+                        DropdownMenuItem(
+                          value: i,
+                          child: Text(
+                            roads[i].road,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                     ],
                     onChanged: busy
                         ? null
@@ -253,6 +241,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       ? 'Add at least 10 characters.'
                       : null,
                 ),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: busy ? null : pickTime,
                   icon: const Icon(Icons.schedule),
@@ -262,6 +251,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         : 'Observed: $observed (local)',
                   ),
                 ),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: busy
                       ? null
@@ -287,7 +277,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         },
                   icon: const Icon(Icons.photo_outlined),
                   label: Text(
-                    photo?.name ?? 'Attach optional photo (max 10 MB)',
+                    photo?.name ?? 'Attach photo (optional, max 10 MB)',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (photo != null)
@@ -305,6 +297,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Text(message!),
                   ),
+                const SizedBox(height: 18),
                 FilledButton(
                   onPressed: busy || !backendConfigured ? null : submit,
                   child: Text(busy ? 'Submitting...' : 'Submit Report'),
@@ -314,7 +307,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           ),
         ),
         if (user != null) ...[
-          const Text('My reports - Latest 100'),
+          const ModuleSectionTitle('My reports'),
           BackendList(
             value: ref.watch(myReportsProvider),
             refresh: () => ref.invalidate(myReportsProvider),
@@ -332,7 +325,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                             ?.road ??
                         'Road unavailable',
                   ),
-                  Text('${row['depth_cm']} cm ? ${row['observed_at']}'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      '${row['depth_cm']} cm ? ${row['observed_at']}',
+                      style: const TextStyle(fontSize: 12, color: mutedText),
+                    ),
+                  ),
                   Text(row['description'] as String),
                   if (row['review_reason'] != null)
                     Text('Administrator: ${row['review_reason']}'),

@@ -96,7 +96,7 @@ final profileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   return ref
       .watch(clientProvider)
       .from('profiles')
-      .select('full_name,status')
+      .select('full_name,status,preferred_area')
       .eq('id', user.id)
       .single();
 });

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/data.dart';
 import '../../core/backend.dart';
 import '../../shared/widgets.dart';
+import '../../shared/module_page.dart';
 import '../flood_checker/checker_screen.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -18,8 +19,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final records = ref.watch(roadsProvider).asData?.value ?? [];
     if (records.isEmpty) {
-      return const PageBody(
-        title: 'Explore locations',
+      return const ModulePage(
+        title: 'Flood map',
         subtitle: 'No published roads available.',
         children: [],
       );
@@ -28,8 +29,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (selected >= records.length) {
       return const Center(child: Text('Select a road again from Home.'));
     }
-    return PageBody(
-      title: 'Explore locations',
+    return ModulePage(
+      title: 'Flood map',
       subtitle: 'Map preview • Illustrative layout, not geographic navigation.',
       children: [
         TextField(
@@ -47,7 +48,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ListTile(
               title: Text(records[i].road),
               subtitle: Text(records[i].area),
-              onTap: () => ref.read(selectedRoadProvider.notifier).select(i),
+              onTap: () {
+                ref.read(selectedRoadProvider.notifier).select(i);
+                FocusScope.of(context).unfocus();
+              },
             ),
         if (query.isNotEmpty &&
             !records.any(
@@ -58,17 +62,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           const Text(
             'No matching published locations. No flood information is available for this search.',
           ),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.my_location),
-          label: const Text('My GPS Location'),
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'GPS is not connected to this illustrative layout. No location permission has been requested.',
-              ),
-            ),
-          ),
-        ),
+        const SizedBox(height: 16),
         const RoadSelector(),
         const SizedBox(height: 20),
         AspectRatio(
@@ -94,22 +88,47 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   const Center(
                     child: VerticalDivider(thickness: 18, color: Colors.white),
                   ),
-                  for (var i = 0; i < records.length; i++)
-                    Positioned(
-                      left: 25 + (i % 2) * 155,
-                      top: 35 + (i ~/ 2) * 145,
-                      child: IconButton.filled(
-                        tooltip: records[i].road,
-                        onPressed: () =>
-                            ref.read(selectedRoadProvider.notifier).select(i),
-                        icon: Icon(
-                          ref.watch(selectedRoadProvider) == i
-                              ? Icons.where_to_vote
-                              : Icons.location_on,
-                          color: Colors.white,
+                  const Positioned(
+                    top: 14,
+                    left: 14,
+                    child: Tag('Illustrative preview'),
+                  ),
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton.filled(
+                          tooltip: records[selected].road,
+                          onPressed: () =>
+                              openChecker(context, onReport: widget.onReport),
+                          iconSize: 32,
+                          icon: const Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Material(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Text(
+                                records[selected].road,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: ink,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),
@@ -118,7 +137,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         const SizedBox(height: 20),
         InfoCard(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 records[selected].road,
@@ -127,7 +146,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   fontSize: 18,
                 ),
               ),
-              Text(records[selected].source),
+              const SizedBox(height: 8),
+              Text(
+                records[selected].area,
+                style: const TextStyle(color: mutedText),
+              ),
+              const SizedBox(height: 12),
               Text(
                 records[selected].depth == null
                     ? 'No current depth available'
@@ -144,6 +168,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 icon: const Icon(Icons.water),
                 label: const Text('Check Flood'),
               ),
+              const SizedBox(height: 12),
               const Text(
                 'Road positions in this layout are illustrative. Geographic navigation is not available.',
               ),

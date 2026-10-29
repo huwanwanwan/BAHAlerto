@@ -34,7 +34,9 @@ void main() {
       final password = find.byType(TextFormField).last;
       await tester.ensureVisible(password);
       await tester.enterText(password, 'example-password');
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.byTooltip('Show password'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Show password'));
       await tester.pumpAndSettle();
       expect(find.byTooltip('Hide password'), findsOneWidget);
@@ -178,8 +180,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Submit Report'));
     await tester.pumpAndSettle();
-    expect(find.text('Login Required'), findsOneWidget);
-    expect(find.text('Continue as Guest'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Continue as guest'), findsOneWidget);
   });
   testWidgets('No local demo report path remains', (tester) async {
     await tester.pumpWidget(

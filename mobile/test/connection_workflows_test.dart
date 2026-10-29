@@ -42,6 +42,26 @@ void main() {
     backendUrl = '';
     backendKey = '';
   });
+  testWidgets('guest entry works from the registration route', (tester) async {
+    final db = await makeClient(tester, MockClient((request) async => http.Response('{}', 200)));
+    addTearDown(() => tester.runAsync(db.dispose));
+    var entered = false;
+    await tester.pumpWidget(ProviderScope(
+      overrides: [clientProvider.overrideWithValue(db)],
+      child: MaterialApp(home: AccountScreen(onGuest: () => entered = true)),
+    ));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.textContaining('Sign Up').last);
+    await tester.tap(find.textContaining('Sign Up').last);
+    await tester.pumpAndSettle();
+    final google = tester.widget<InkWell>(find.ancestor(of: find.text('Google'), matching: find.byType(InkWell)).first);
+    expect(google.onTap, isNotNull);
+    await tester.ensureVisible(find.text('Continue as guest'));
+    await tester.tap(find.text('Continue as guest'));
+    await tester.pumpAndSettle();
+    expect(entered, true);
+    expect(find.text('Create an account'), findsNothing);
+  });
   testWidgets(
     'registration sends profile metadata and waits for email confirmation',
     (tester) async {
@@ -70,6 +90,7 @@ void main() {
           child: const MaterialApp(home: AccountScreen(register: true)),
         ),
       );
+      await tester.pumpAndSettle();
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'Test Person');
       await tester.enterText(fields.at(1), 'user@example.test');
@@ -116,10 +137,12 @@ void main() {
           child: const MaterialApp(home: AccountScreen()),
         ),
       );
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.byType(TextFormField).at(0),
         'user@example.test',
       );
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'test-password-123',
@@ -185,16 +208,95 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.byType(TextFormField).at(0),
         'user@example.test',
       );
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'test-password-123',
       );
       await tester.runAsync(
         () => tester.tap(find.widgetWithText(FilledButton, 'Log In')),
+      );
+      await finishRequest(tester);
+      expect(entered, true);
+      expect(db.auth.currentUser?.id, 'test-user');
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'registration opened from startup completes and closes its route',
+    (tester) async {
+      final header = base64Url
+          .encode(utf8.encode('{"alg":"HS256","typ":"JWT"}'))
+          .replaceAll('=', '');
+      final payload = base64Url
+          .encode(
+            utf8.encode(
+              jsonEncode({
+                'sub': 'test-user',
+                'exp':
+                    DateTime.now()
+                        .add(const Duration(hours: 1))
+                        .millisecondsSinceEpoch ~/
+                    1000,
+              }),
+            ),
+          )
+          .replaceAll('=', '');
+      final db = await makeClient(
+        tester,
+        MockClient(
+          (request) async => http.Response(
+            jsonEncode({
+              'access_token': '$header.$payload.test',
+              'refresh_token': 'test-refresh',
+              'token_type': 'bearer',
+              'expires_in': 3600,
+              'user': {
+                'id': 'test-user',
+                'aud': 'authenticated',
+                'email': 'user@example.test',
+                'created_at': '2026-10-29T00:00:00Z',
+              },
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+            request: request,
+          ),
+        ),
+      );
+      addTearDown(() => tester.runAsync(db.dispose));
+      var entered = false;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [clientProvider.overrideWithValue(db)],
+          child: MaterialApp(
+            home: AccountScreen(onAuthenticated: () => entered = true),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.textContaining('Sign Up').last);
+      await tester.tap(find.textContaining('Sign Up').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).at(0), 'Test Person');
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'user@example.test',
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextFormField).at(2),
+        'test-password-123',
+      );
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Register'));
+      await tester.runAsync(
+        () => tester.tap(find.widgetWithText(FilledButton, 'Register')),
       );
       await finishRequest(tester);
       expect(entered, true);
@@ -236,6 +338,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).at(0), '25');
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'Water covering the road surface.',

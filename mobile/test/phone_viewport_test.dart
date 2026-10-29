@@ -5,6 +5,55 @@ import 'package:bahalerto/shared/phone_viewport.dart';
 import 'package:bahalerto/features/settings/settings_screen.dart';
 
 void main() {
+  for (final register in [false, true]) {
+    testWidgets('artwork stays stationary while fading on ${register ? 'sign-up' : 'login'}', (tester) async {
+      await tester.pumpWidget(ProviderScope(child: MaterialApp(home: AccountScreen(register: register))));
+      await tester.pump(const Duration(milliseconds: 100));
+      final artwork = find.byKey(const ValueKey('login-header-artwork'));
+      final initial = tester.getRect(artwork);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(tester.getRect(artwork), initial);
+      await tester.pump(const Duration(seconds: 5));
+      expect(tester.getRect(artwork), initial);
+      expect(find.byType(AnimatedCrossFade), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('login sign-up link fits a phone without scrolling', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(top: 54, bottom: 24);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPadding);
+    await tester.pumpWidget(ProviderScope(child: MaterialApp(
+      builder: (_, child) => PhoneViewport(child: child!),
+      home: const AccountScreen(),
+    )));
+    await tester.pumpAndSettle();
+    final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first);
+    expect(scroll.position.maxScrollExtent, lessThanOrEqualTo(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('registration fits a phone without scrolling', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(top: 54, bottom: 24);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPadding);
+    await tester.pumpWidget(ProviderScope(child: MaterialApp(
+      builder: (_, child) => PhoneViewport(child: child!),
+      home: const AccountScreen(register: true),
+    )));
+    await tester.pumpAndSettle();
+    final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first);
+    expect(scroll.position.maxScrollExtent, lessThanOrEqualTo(1));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('preview status remains above pushed mobile routes', (
     tester,
   ) async {
@@ -109,7 +158,7 @@ void main() {
       44,
     );
   });
-  testWidgets('login illustration settles left of the title on a small phone', (
+  testWidgets('login illustration settles right of the title on a small phone', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 568);
@@ -122,7 +171,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester.getCenter(find.byKey(const ValueKey('login-header-artwork'))).dx,
-      lessThan(
+      greaterThan(
         tester.getCenter(find.byKey(const ValueKey('login-header-copy'))).dx,
       ),
     );

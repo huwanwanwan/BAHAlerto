@@ -26,13 +26,7 @@ class _IntroScreenState extends State<IntroScreen> {
       switchOutCurve: Curves.easeInCubic,
       transitionBuilder: (child, animation) => FadeTransition(
         opacity: animation,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(.035, 0),
-            end: Offset.zero,
-          ).animate(animation),
-          child: child,
-        ),
+        child: child,
       ),
       child: finished || reduceMotion
           ? KeyedSubtree(

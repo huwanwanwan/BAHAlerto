@@ -160,7 +160,7 @@ void main() {
     await tester.ensureVisible(find.text('Report Flood Here'));
     await tester.tap(find.text('Report Flood Here'));
     await tester.pumpAndSettle();
-    expect(find.text('Community reports'), findsOneWidget);
+    expect(find.text('Report flood'), findsOneWidget);
     expect(find.text('Taft Avenue').hitTestable(), findsOneWidget);
   });
   testWidgets('repository failure offers retry without invented depth', (

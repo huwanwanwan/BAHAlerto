@@ -9,7 +9,8 @@ import 'package:flutter/material.dart';
 //  No Lottie, no Rive, no extra packages.
 //
 //  Sequence (3.6 s at speed 1.0):
-//    1. LOCATION  – the pin fades in on a soft map and pings the area.
+//    1. LOCATION  – the pin fades in on a soft city map. A green route draws
+//                   towards it and green / orange / red radar rings ping out.
 //    2. CAR       – the car (with its water) drives in from the right and
 //                   stops under the pin. Splash droplets pop on arrival.
 //    3. TEXT      – the letters A-H-A-l-e-r-t-o pop up one by one
@@ -58,23 +59,9 @@ const _tO = _Layer('assets/logo/txt_o.png', 1293, 399, 150, 153);
 const _letters = [_tA1, _tH, _tA2, _tL, _tE, _tR, _tT, _tO];
 
 const _allLayers = [
-  _car,
-  _pin,
-  _wavesBack,
-  _wavesFront,
-  _splashL,
-  _splashR,
-  _arc1,
-  _arc2,
-  _arc3,
-  _tA1,
-  _tH,
-  _tA2,
-  _tL,
-  _tE,
-  _tR,
-  _tT,
-  _tO,
+  _car, _pin, _wavesBack, _wavesFront, _splashL, _splashR,
+  _arc1, _arc2, _arc3,
+  _tA1, _tH, _tA2, _tL, _tE, _tR, _tT, _tO,
 ];
 
 /// Where the pin touches the ground, and the centre the 3 arcs radiate from.
@@ -83,9 +70,6 @@ const Offset _arcOrigin = Offset(1284, 418);
 
 /// Leftmost pixel of the parts that drive in (car body + water).
 const double _drivingLeft = 89;
-
-/// How far below the logo's centre the road runs (so the car sits on it).
-const double _roadDropFactor = 0.30; // × logo height
 
 const Color _taglineGrey = Color(0xFF6B7280);
 
@@ -121,17 +105,16 @@ class _BahalertoSplashState extends State<BahalertoSplash>
   @override
   void initState() {
     super.initState();
-    _c =
-        AnimationController(
-          vsync: this,
-          duration: Duration(
-            milliseconds: (_seconds * 1000 / widget.speed).round(),
-          ),
-        )..addStatusListener((status) {
-          if (status == AnimationStatus.completed) {
-            widget.onFinished?.call();
-          }
-        });
+    _c = AnimationController(
+      vsync: this,
+      duration: Duration(
+        milliseconds: (_seconds * 1000 / widget.speed).round(),
+      ),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          widget.onFinished?.call();
+        }
+      });
   }
 
   @override
@@ -153,8 +136,7 @@ class _BahalertoSplashState extends State<BahalertoSplash>
     }
     if (!mounted) return;
 
-    final reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (reduceMotion) {
       // Respect the system "reduce motion" setting: show the finished logo.
       _c.value = _holdAt / _seconds;
@@ -174,12 +156,7 @@ class _BahalertoSplashState extends State<BahalertoSplash>
   // ── timeline helper ────────────────────────────────────────────────────────
 
   /// 0 → 1 between second [a] and second [b], shaped by [curve].
-  static double _seg(
-    double s,
-    double a,
-    double b, [
-    Curve curve = Curves.linear,
-  ]) {
+  static double _seg(double s, double a, double b, [Curve curve = Curves.linear]) {
     final t = ((s - a) / (b - a)).clamp(0.0, 1.0).toDouble();
     return curve.transform(t);
   }
@@ -202,8 +179,9 @@ class _BahalertoSplashState extends State<BahalertoSplash>
           final top = (h - logoH) / 2 - 28;
 
           final tip = Offset(left + _pinTip.dx * k, top + _pinTip.dy * k);
-          final center = Offset(w / 2, top + logoH / 2);
-          final roadAt = center + Offset(0, logoH * _roadDropFactor);
+
+          // Shrink the map a little on short screens so the whole route fits.
+          final fit = math.min(1.0, (tip.dy - 44) / 340).clamp(0.55, 1.0).toDouble();
 
           // How far right the car must start so it is fully off-screen.
           final travel = w - left - _drivingLeft * k + 16;
@@ -214,22 +192,18 @@ class _BahalertoSplashState extends State<BahalertoSplash>
               final s = _c.value * _seconds;
               final exit = _seg(s, 3.2, 3.6);
 
-              // Map camera follows the car: fast while it drives, then eases.
-              final dist =
-                  _MapPainter.totalDist * _seg(s, 0, 3.4, Curves.easeOutCubic);
-              final turn = Curves.easeInOut.transform(
-                ((dist - 230) / 130).clamp(0.0, 1.0).toDouble(),
-              );
+              // Map camera: settles onto the pin (rotate + zoom around it).
+              final settle = _seg(s, 0, 2.2, Curves.easeOutCubic);
 
               final painter = _MapPainter(
                 opacity: _seg(s, 0, 0.5, Curves.easeOut),
-                center: center,
-                roadAt: roadAt,
-                cam: _MapPainter.camAt(dist),
-                angle: -_MapPainter.turnAngle * turn,
-                zoom: 1 + 0.10 * _seg(s, 0, 3.4),
-                flood: _seg(s, 1.0, 1.9, Curves.easeOutCubic),
                 tip: tip,
+                angle: 0.35 * (1 - settle),
+                zoom: fit * (0.90 + 0.10 * settle + 0.04 * _seg(s, 2.2, 3.6)),
+                flood: _seg(s, 1.0, 2.0, Curves.easeOutCubic),
+                route: _seg(s, 0.30, 1.15, Curves.easeInOutCubic),
+                origin: _seg(s, 0.25, 0.55),
+                flow: s,
                 ping: s - 0.35, // pin pings its location as soon as it appears
               );
 
@@ -273,14 +247,12 @@ class _BahalertoSplashState extends State<BahalertoSplash>
 
     // After it stops, the two water bands drift gently in opposite directions.
     final flow = _seg(s, 1.3, 1.9);
-    final frontOffset =
-        driveOffset +
+    final frontOffset = driveOffset +
         Offset(
           math.sin(s * 1.5) * 0.007 * w * flow,
           math.sin(s * 2.3) * 0.006 * h * flow,
         );
-    final backOffset =
-        driveOffset +
+    final backOffset = driveOffset +
         Offset(
           -math.sin(s * 1.5 + 0.6) * 0.009 * w * flow,
           math.sin(s * 2.3 + 1.8) * 0.006 * h * flow,
@@ -326,13 +298,8 @@ class _BahalertoSplashState extends State<BahalertoSplash>
       children: [
         ...letterWidgets, // under the car, so the rear wheel overlaps the "o"
         _piece(_car, k, offset: driveOffset),
-        _piece(
-          _pin,
-          k,
-          opacity: pinFade,
-          scale: pinScale,
-          align: Alignment.bottomCenter,
-        ),
+        _piece(_pin, k,
+            opacity: pinFade, scale: pinScale, align: Alignment.bottomCenter),
         _piece(_wavesBack, k, offset: backOffset),
         _piece(_wavesFront, k, offset: frontOffset),
         _piece(_splashL, k, scale: popL, align: Alignment.bottomRight),
@@ -385,10 +352,7 @@ class _BahalertoSplashState extends State<BahalertoSplash>
       filterQuality: FilterQuality.high,
     );
     if (opacity < 1) {
-      child = Opacity(
-        opacity: opacity.clamp(0.0, 1.0).toDouble(),
-        child: child,
-      );
+      child = Opacity(opacity: opacity.clamp(0.0, 1.0).toDouble(), child: child);
     }
     if (scale != 1) {
       child = Transform.scale(scale: scale, alignment: align, child: child);
@@ -408,44 +372,52 @@ class _BahalertoSplashState extends State<BahalertoSplash>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Soft map background + radar rings
+//  Map background: city blocks, parks, a river, a route to the pin, and the
+//  green / orange / red radar rings.
 //
-//  The road runs right-to-left (the car faces left). The "camera" slides along
-//  it, turns a corner, and keeps going – like the navigation map in the video.
+//  Everything is drawn in "map space" where the DESTINATION (the pin's tip) is
+//  the point (0, 0). The camera only rotates / zooms around that point, so the
+//  route always ends exactly under the pin.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _MapPainter extends CustomPainter {
   const _MapPainter({
     required this.opacity,
-    required this.center,
-    required this.roadAt,
-    required this.cam,
+    required this.tip,
     required this.angle,
     required this.zoom,
     required this.flood,
-    required this.tip,
+    required this.route,
+    required this.origin,
+    required this.flow,
     required this.ping,
   });
 
   final double opacity; // whole map fade-in
-  final Offset center; //  middle of the logo (centre of the soft edge fade)
-  final Offset roadAt; //  screen point the road passes through
-  final Offset cam; //     camera position in map space
-  final double angle; //   camera rotation (radians)
-  final double zoom;
-  final double flood; //   0 → 1: flood patch on the road ahead
-  final Offset tip; //     screen position of the pin's tip
-  final double ping; //    seconds since the first ping (negative = not yet)
+  final Offset tip; //     screen position of the pin's tip = the destination
+  final double angle; //   map rotation around the destination (radians)
+  final double zoom; //    map scale
+  final double flood; //   0 → 1: the river swells
+  final double route; //   0 → 1: how much of the route is drawn
+  final double origin; //  0 → 1: fade-in of the start dot
+  final double flow; //    seconds – moves the dashes along the route
+  final double ping; //    seconds since the first radar ping (<0 = not yet)
 
-  // Road geometry (map space): straight to the left, then bends up-left.
-  static const double turnAngle = 0.60; //                  radians
-  static const Offset _start = Offset(260, 0);
-  static const Offset _corner = Offset(-60, 0);
-  static const Offset _dir2 = Offset(-0.8253, -0.5646); //  cos/sin of 0.60
-  static const double l1 = 320; //   start → corner
-  static const double l2 = 150; //   corner → end
-  static const double totalDist = l1 + l2;
-  static const Offset _floodSpot = Offset(-183.8, -84.7); // corner + dir2 * 150
+  // ── map geometry ──────────────────────────────────────────────────────────
+
+  static const double _grid = 56; // distance between streets
+
+  // Streets used by the route stay free of "merged" blocks.
+  static const Set<int> _routeCols = {0, 3};
+  static const Set<int> _routeRows = {-3, 0};
+
+  /// Route (map space, y down): start → corner → corner → destination.
+  static const List<Offset> _routePts = [
+    Offset(168, -336),
+    Offset(168, -168),
+    Offset(0, -168),
+    Offset(0, 0),
+  ];
 
   /// Radar ring colours, in the order the rings are sent out
   /// (sampled from the logo: green · orange · red).
@@ -455,36 +427,7 @@ class _MapPainter extends CustomPainter {
     Color(0xFFED2D22), // red
   ];
 
-  /// Camera position after travelling [dist] along the road.
-  static Offset camAt(double dist) {
-    if (dist <= l1) return Offset(_start.dx - dist, 0);
-    final u = dist - l1;
-    return Offset(_corner.dx + _dir2.dx * u, _dir2.dy * u);
-  }
-
-  static final Path _road = Path()
-    ..moveTo(1100, 0)
-    ..lineTo(_corner.dx, _corner.dy)
-    ..lineTo(_corner.dx + _dir2.dx * 1000, _corner.dy + _dir2.dy * 1000);
-
-  static final Path _streets = _buildStreets();
-
-  static final Paint _roadPaint = Paint()
-    ..color = const Color(0x1F6B7280)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 34
-    ..strokeJoin = StrokeJoin.round
-    ..strokeCap = StrokeCap.round
-    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-
-  static final Paint _streetPaint = Paint()
-    ..color = const Color(0x249CA3AF)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 1.6;
-
-  static final Paint _floodPaint = Paint()
-    ..color = const Color(0x330AA0F0)
-    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
+  static const Color _routeGreen = Color(0xFF1FA050);
 
   /// Deterministic pseudo-random number in [0, 1) – same result every frame.
   static double _hash(int a, int b) {
@@ -492,84 +435,240 @@ class _MapPainter extends CustomPainter {
     return v - v.floorToDouble();
   }
 
-  static Path _buildStreets() {
-    final p = Path();
-    for (var i = -9; i <= 9; i++) {
-      // vertical streets
-      final x = i * 56.0 + (_hash(i, 1) - 0.5) * 20;
-      var y = -760.0;
-      var j = 0;
-      while (y < 760) {
-        final len = 70 + _hash(i, j + 10) * 210;
-        if (_hash(i, j + 50) > 0.3) {
-          p.moveTo(x, y);
-          p.lineTo(x, y + len);
+  /// 0 = empty plot, 1 = park, 2 = building block.
+  static int _kind(int i, int j) {
+    final h = _hash(i, j);
+    if (h < 0.06) return 0;
+    if (h < 0.16) return 1;
+    return 2;
+  }
+
+  static Rect _cell(int i, int j) {
+    final ins = 5.0 + _hash(i + 40, j + 40) * 2.5;
+    return Rect.fromLTRB(
+      i * _grid + ins,
+      j * _grid + ins,
+      (i + 1) * _grid - ins,
+      (j + 1) * _grid - ins,
+    );
+  }
+
+  /// Returns [blocks, parks] as two ready-made paths.
+  static List<Path> _buildGeometry() {
+    final blocks = Path();
+    final parks = Path();
+    const radius = Radius.circular(3);
+    for (var i = -10; i < 10; i++) {
+      for (var j = -10; j < 10; j++) {
+        final kind = _kind(i, j);
+        if (kind == 0) continue;
+        final r = _cell(i, j);
+        if (kind == 1) {
+          parks.addRRect(RRect.fromRectAndRadius(r, radius));
+          continue;
         }
-        y += len + 16 + _hash(i, j + 90) * 34;
-        j++;
-      }
-      // horizontal streets
-      final yy = i * 56.0 + (_hash(i, 2) - 0.5) * 20;
-      var xx = -760.0;
-      var jj = 0;
-      while (xx < 760) {
-        final len = 70 + _hash(i + 100, jj + 10) * 210;
-        if (_hash(i + 100, jj + 50) > 0.3) {
-          p.moveTo(xx, yy);
-          p.lineTo(xx + len, yy);
+        blocks.addRRect(RRect.fromRectAndRadius(r, radius));
+
+        // Sometimes join two neighbouring blocks into one big block
+        // (never across the streets the route runs on).
+        if (_kind(i + 1, j) == 2 &&
+            !_routeCols.contains(i + 1) &&
+            _hash(i + 80, j + 80) < 0.22) {
+          final b = _cell(i + 1, j);
+          blocks.addRect(Rect.fromLTRB(
+              r.right, math.max(r.top, b.top), b.left, math.min(r.bottom, b.bottom)));
         }
-        xx += len + 16 + _hash(i + 100, jj + 90) * 34;
-        jj++;
+        if (_kind(i, j + 1) == 2 &&
+            !_routeRows.contains(j + 1) &&
+            _hash(i + 120, j + 120) < 0.22) {
+          final b = _cell(i, j + 1);
+          blocks.addRect(Rect.fromLTRB(
+              math.max(r.left, b.left), r.bottom, math.min(r.right, b.right), b.top));
+        }
       }
     }
+    return [blocks, parks];
+  }
+
+  static final List<Path> _geo = _buildGeometry();
+
+  /// A river that winds below the logo – it "floods" when [flood] grows.
+  static final Path _river = Path()
+    ..moveTo(-620, 330)
+    ..cubicTo(-260, 120, 60, 360, 620, 170);
+
+  /// Polyline with rounded corners.
+  static Path _roundedPolyline(List<Offset> pts, double r) {
+    final p = Path()..moveTo(pts.first.dx, pts.first.dy);
+    for (var i = 1; i < pts.length - 1; i++) {
+      final prev = pts[i - 1];
+      final cur = pts[i];
+      final next = pts[i + 1];
+      final a = cur + (prev - cur) / (prev - cur).distance * r;
+      final b = cur + (next - cur) / (next - cur).distance * r;
+      p.lineTo(a.dx, a.dy);
+      p.quadraticBezierTo(cur.dx, cur.dy, b.dx, b.dy);
+    }
+    p.lineTo(pts.last.dx, pts.last.dy);
     return p;
+  }
+
+  static final Path _routePath = _roundedPolyline(_routePts, 16);
+  static final _routeMetric = _routePath.computeMetrics().first;
+  static final double _routeLen = _routeMetric.length;
+
+  // ── paints (created once) ─────────────────────────────────────────────────
+
+  static final Paint _blockPaint = Paint()..color = const Color(0x126B7280);
+  static final Paint _parkPaint = Paint()..color = const Color(0x1C22A559);
+
+  static final Paint _riverPaint = Paint()
+    ..color = const Color(0x240AA0F0)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 34
+    ..strokeCap = StrokeCap.round;
+
+  static final Paint _casingPaint = Paint()
+    ..color = const Color(0xD9FFFFFF)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 9
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+
+  static final Paint _routeBasePaint = Paint()
+    ..color = const Color(0x401FA050)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 6
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+
+  static final Paint _dashPaint = Paint()
+    ..color = _routeGreen
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 3.6
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+
+  // ── painting ──────────────────────────────────────────────────────────────
+
+  void _applyCamera(Canvas canvas) {
+    canvas.translate(tip.dx, tip.dy);
+    canvas.rotate(angle);
+    canvas.scale(zoom);
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
 
+    // 1 ─ blocks, parks and river, in their own layer so the top and bottom
+    //     can fade out to white.
     if (opacity > 0.001) {
-      // Draw the map into its own layer so we can fade its edges to white.
       canvas.saveLayer(
         rect,
         Paint()..color = Color.fromRGBO(255, 255, 255, opacity),
       );
 
       canvas.save();
-      canvas.translate(roadAt.dx, roadAt.dy);
-      canvas.rotate(angle);
-      canvas.scale(zoom);
-      canvas.translate(-cam.dx, -cam.dy);
-      canvas.drawPath(_streets, _streetPaint);
-      canvas.drawPath(_road, _roadPaint);
+      _applyCamera(canvas);
+      canvas.drawPath(_geo[0], _blockPaint);
+      canvas.drawPath(_geo[1], _parkPaint);
+      canvas.drawPath(_river, _riverPaint);
       if (flood > 0.001) {
-        canvas.drawCircle(_floodSpot, 64 * flood, _floodPaint);
+        // the river swells and spills over
+        canvas.drawPath(
+          _river,
+          Paint()
+            ..color = const Color(0x330AA0F0)
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 30 + 60 * flood
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+        );
       }
       canvas.restore();
 
-      // Feather: opaque in the middle, transparent towards the edges.
       canvas.drawRect(
         rect,
         Paint()
           ..blendMode = BlendMode.dstIn
-          ..shader =
-              const RadialGradient(
-                colors: [
-                  Color(0xFFFFFFFF),
-                  Color(0xFFFFFFFF),
-                  Color(0x00FFFFFF),
-                ],
-                stops: [0.0, 0.34, 1.0],
-              ).createShader(
-                Rect.fromCircle(center: center, radius: size.width * 0.80),
-              ),
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0x00FFFFFF),
+              Color(0xFFFFFFFF),
+              Color(0xFFFFFFFF),
+              Color(0x00FFFFFF),
+            ],
+            stops: [0.0, 0.16, 0.62, 0.88],
+          ).createShader(rect),
       );
       canvas.restore();
     }
 
-    // Radar: rings spread from the pin, one colour per ring –
-    // green (safe) → orange (warning) → red (danger).
+    // 2 ─ the route: draws from the start dot to the pin, dashes keep flowing.
+    if (route > 0.001) {
+      canvas.save();
+      _applyCamera(canvas);
+
+      final drawn = _routeLen * route;
+      final line = _routeMetric.extractPath(0, drawn);
+      canvas.drawPath(line, _casingPaint);
+      canvas.drawPath(line, _routeBasePaint);
+
+      const dash = 10.0;
+      const period = 18.0; // dash + gap
+      final phase = (flow * 40) % period;
+      for (var d = phase - period; d < drawn; d += period) {
+        final a = math.max(d, 0.0);
+        final b = math.min(d + dash, drawn);
+        if (b > a) canvas.drawPath(_routeMetric.extractPath(a, b), _dashPaint);
+      }
+
+      // start dot
+      if (origin > 0.001) {
+        final o = _routePts.first;
+        canvas.drawCircle(
+          o,
+          7,
+          Paint()..color = Color.fromRGBO(255, 255, 255, origin),
+        );
+        canvas.drawCircle(
+          o,
+          7,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3
+            ..color = _routeGreen.withAlpha((origin * 255).round()),
+        );
+      }
+
+      // glowing dot at the tip of the line while it is travelling
+      final head = _routeMetric.getTangentForOffset(drawn)?.position;
+      if (head != null && route < 0.995) {
+        canvas.drawCircle(
+          head,
+          11,
+          Paint()
+            ..color = const Color(0x401FA050)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+        );
+        canvas.drawCircle(head, 5.5, Paint()..color = _routeGreen);
+        canvas.drawCircle(
+          head,
+          5.5,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..color = Colors.white,
+        );
+      }
+      canvas.restore();
+    }
+
+    // 3 ─ radar: rings spread from the pin, one colour per ring –
+    //     green (safe) → orange (warning) → red (danger).
     if (ping >= 0) {
       for (var i = 0; i < _radarColors.length; i++) {
         final local = ping - i * 0.45;
