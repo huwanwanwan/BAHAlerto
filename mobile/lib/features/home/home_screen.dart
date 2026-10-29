@@ -1375,24 +1375,6 @@ class _FloodReportCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 6,
-                    bottom: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xB3000000),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'AI illustration',
-                        style: TextStyle(fontSize: 9, color: Colors.white),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
