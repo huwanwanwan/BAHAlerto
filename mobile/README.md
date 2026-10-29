@@ -58,3 +58,14 @@ its transparency and full image with right-aligned `BoxFit.contain`. The title
 and tagline sit above its open left side. See [artwork notes](design/login-sticker.md). Login and registration retain Supabase authentication, autofill,
 validation, password visibility, email-confirmation messages and guest access.
 The scrollable layout accommodates small phones, larger text and the keyboard.
+
+## Reliable VS Code preview workspace
+
+Open `../BAHAlerto.code-workspace` for the Mobile, Admin and Backend folders
+in one VS Code window. Mobile is first and the Flutter SDK folder is outside
+these workspace folders, so FlutterFrame finds the app's `mobile/pubspec.yaml`
+and `mobile/lib/main.dart` instead of an SDK/example package.
+
+If an existing preview cached an asset that was replaced, stop it before running
+`flutter clean` and `flutter pub get` from `C:/BAHAlerto/mobile`, then start
+FlutterFrame again. Do not start a second preview on port 8686 simultaneously.

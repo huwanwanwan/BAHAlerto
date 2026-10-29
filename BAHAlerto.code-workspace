@@ -1,0 +1,29 @@
+{
+  "folders": [
+    {
+      "name": "Mobile",
+      "path": "mobile"
+    },
+    {
+      "name": "Admin",
+      "path": "admin"
+    },
+    {
+      "name": "Backend",
+      "path": "backend"
+    }
+  ],
+  "settings": {
+    "dart.flutterSdkPath": "C:/BAHAlerto/.tools/flutter",
+    "dart.flutterHotReloadOnSave": "all",
+    "flutterframe.autoReload": true,
+    "flutterframe.defaultDevice": "iPhone 15 Pro",
+    "flutterframe.port": 8686
+  },
+  "extensions": {
+    "recommendations": [
+      "Dart-Code.flutter",
+      "YashPatel-2611.flutterframe"
+    ]
+  }
+}
