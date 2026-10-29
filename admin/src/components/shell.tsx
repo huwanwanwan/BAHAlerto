@@ -14,12 +14,12 @@ import {
   HeartPulse,
   ChartNoAxesCombined,
   Settings,
-  Bell,
   PanelLeftClose,
   LogOut,
   ChevronRight,
 } from "lucide-react";
 import { modules } from "@/lib/modules";
+import { AdminNotifications } from "./admin-notifications";
 import { logout } from "@/app/actions";
 const icons = [
   LayoutDashboard,
@@ -136,13 +136,7 @@ export function Shell({
             </span>
           </div>
           <div className="header-right">
-            <Link
-              className="icon-button"
-              aria-label="Advisories"
-              href="/admin/alerts"
-            >
-              <Bell size={20} />
-            </Link>
+            <AdminNotifications connected={connected} />
             <Link href="/admin/settings" className="avatar" aria-label="Account settings" title={email ?? "Account settings"}>BA</Link>
           </div>
         </header>

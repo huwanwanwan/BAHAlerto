@@ -16,7 +16,7 @@ export default async function UserDetails({
   const db = await database();
   const { data: user } = await db
     .from("profiles")
-    .select("id,full_name,phone,preferred_area,status,created_at")
+    .select("id,full_name,phone,preferred_area,status,created_at,last_sign_in_at")
     .eq("id", id)
     .single();
   if (!user) notFound();
@@ -41,6 +41,7 @@ export default async function UserDetails({
         <p>Status: {user.status}</p>
         <p>Preferred area: {user.preferred_area ?? "Not provided"}</p>
         <p>Phone: {user.phone ?? "Not provided"}</p>
+        <p>Last sign-in: {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString("en-PH", {timeZone: "Asia/Manila"}) : "No sign-in recorded"}</p>
         <p>
           Created:{" "}
           {new Date(user.created_at).toLocaleString("en-PH", {

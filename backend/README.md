@@ -67,3 +67,33 @@ npm.cmd test
 Tests execute all migrations and the standalone bundle in isolated local PostgreSQL (PGlite), with mocked Supabase Auth/Storage schemas. They verify RLS, private-record isolation, moderation, publication, storage policies, suspension, all 12 secured tables and absence of seeded operational data. This does not replace integration testing against your actual Supabase Auth, Storage and PostgreSQL deployment.
 
 Versioned deployment follows the [Supabase migration workflow](https://supabase.com/docs/guides/local-development/database-migrations); grants and policies follow [Supabase RLS guidance](https://supabase.com/docs/guides/database/postgres/row-level-security).
+
+## Admin notifications and sign-in tracking
+
+For an existing database with migrations 001?004 already applied, run only
+`supabase/migrations/20261029000500_admin_notifications.sql` in Supabase SQL Editor.
+Do not paste the full `schema.sql` into an existing database. The generated bundle
+is for a fresh database and now includes migration 005.
+
+Migration 005 stores `profiles.last_sign_in_at` from the trusted Supabase Auth
+user record. Email/password and Google sign-ins use the same UUID and profile.
+It also generates per-admin notifications for account registration, successful
+sign-in and new flood report submissions. An administrator must be active, with
+an active profile and the relevant `users`/`reports` or `dashboard` permission.
+Administrators are not notified about their own actions. No past activity is
+fabricated; new events are collected after installing the migration. Existing
+Auth last-sign-in timestamps are backfilled into profiles.
+
+The admin bell polls every 30 seconds, refreshes when the window regains focus
+or the bell opens, and shows a red unread count (99+ above 99). Read status is
+stored per recipient, not in browser storage. ?Mark shown as read? applies to
+the latest visible 20 notifications; older unread records remain counted.
+Successful login events are detected in Auth; clients cannot insert notifications
+or edit their own last-sign-in timestamp. Unconfirmed email registration creates
+a profile but does not mean the person has successfully signed in.
+
+After applying 005: register/confirm/sign in using a test mobile account, then
+open Admin > Users to check the shared UUID and Last sign-in. Open the bell using
+a different authorized admin account. Submit a test report and check its event.
+Mark it read, reload, and verify the unread count stays reduced. A normal mobile
+account must not be able to query other users' notifications.

@@ -138,7 +138,7 @@ export default async function Module({
     ],
     roads: ["name", "locality", "publication_status"],
     alerts: ["title", "road_name", "severity", "expires_at", "status"],
-    users: ["full_name", "preferred_area", "created_at", "status"],
+    users: ["full_name", "preferred_area", "created_at", "last_sign_in_at", "status"],
     emergency:
       tab === "centers"
         ? ["name", "address", "verified_at", "publication_status"]

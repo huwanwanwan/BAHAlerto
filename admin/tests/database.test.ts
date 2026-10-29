@@ -6,7 +6,7 @@ test("database migrations enforce role, review, publication and audit rules", as
   const db = new PGlite();
   try {
     await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;
- create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
+ create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}',last_sign_in_at timestamptz);
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema auth,public,storage to anon,authenticated;
  grant execute on function auth.uid() to anon,authenticated;
@@ -30,6 +30,25 @@ test("database migrations enforce role, review, publication and audit rules", as
         `reset role;set role ${role};select set_config('request.jwt.claim.sub','${id}',false);`,
       );
     }
+    // Signup and login events originate in Auth, not a mobile write request.
+    const signup = '10000000-0000-4000-8000-000000000004';
+    await db.exec(`insert into auth.users(id,raw_user_meta_data) values('${signup}','{"full_name":"Mobile signup"}');
+      update auth.users set last_sign_in_at=now() where id='${user}';`);
+    assert.equal((await db.query(`select id from public.profiles where id='${signup}'`)).rows.length, 1);
+    assert.equal((await db.query<{last_sign_in_at:string|null}>(`select last_sign_in_at from public.profiles where id='${user}'`)).rows[0].last_sign_in_at != null, true);
+    await as("authenticated", admin);
+    const inbox = await db.query<{id:string;kind:string}>("select id,kind from public.admin_notifications order by created_at");
+    assert.equal(inbox.rows.length, 2);
+    assert.deepEqual(new Set(inbox.rows.map(row=>row.kind)), new Set(['account_registered','account_login']));
+    await db.exec(`update public.admin_notifications set read_at=now() where id='${inbox.rows[0].id}'`);
+    assert.equal((await db.query('select id from public.admin_notifications where read_at is null')).rows.length, 1);
+    await assert.rejects(db.exec(`update public.admin_notifications set title='forged'`));
+    await as("authenticated", user);
+    assert.equal((await db.query('select id from public.admin_notifications')).rows.length, 0);
+    await assert.rejects(db.exec(`insert into public.admin_notifications(recipient_id,actor_id,kind,record_id,title) values('${admin}','${user}','account_login','${user}','Forged login')`));
+    await assert.rejects(db.exec(`update public.profiles set last_sign_in_at=now() where id='${user}'`));
+    await db.exec(`reset role; update auth.users set last_sign_in_at=last_sign_in_at where id='${user}';`);
+    assert.equal((await db.query(`select id from public.admin_notifications where kind='account_login'`)).rows.length, 1);
     await as("authenticated", user);
     const report = (
       await db.query<{ id: string }>(
@@ -58,6 +77,8 @@ test("database migrations enforce role, review, publication and audit rules", as
       (await db.query(`select * from public.flood_reports`)).rows.length,
       0,
     );
+    await as("authenticated", admin);
+    assert.equal((await db.query(`select id from public.admin_notifications where kind='report_submitted' and record_id='${report}'`)).rows.length, 1);
     await as("authenticated", admin);
     await assert.rejects(
       db.exec(`select public.review_flood_report('${report}','rejected','')`),
@@ -220,7 +241,7 @@ test('single-file database setup creates all tables with RLS and no sample recor
  const db=new PGlite();
  try {
   await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;
-   create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
+   create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}',last_sign_in_at timestamptz);
    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
    grant usage on schema auth,public,storage to anon,authenticated;
    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
@@ -229,7 +250,7 @@ test('single-file database setup creates all tables with RLS and no sample recor
    create function storage.foldername(text) returns text[] language sql immutable as $$select string_to_array($1,'/')$$;`);
   await db.exec(readFileSync('../backend/schema.sql','utf8'));
   const tables=await db.query<{tablename:string;rowsecurity:boolean}>("select tablename,rowsecurity from pg_tables where schemaname='public'");
-  assert.equal(tables.rows.length,11);
+  assert.equal(tables.rows.length,12);
   assert.ok(tables.rows.every(table=>table.rowsecurity));
   for(const table of tables.rows){assert.equal((await db.query<{count:number}>(`select count(*)::int as count from public.${table.tablename}`)).rows[0].count,0);}
   assert.equal((await db.query<{public:boolean}>("select public from storage.buckets where id='flood-photos'")).rows[0].public,false);
@@ -241,7 +262,7 @@ test('cleanup refuses populated camera inventory without deleting its records', 
  const db = new PGlite();
  try {
   await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;
-   create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
+   create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}',last_sign_in_at timestamptz);
    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
    grant usage on schema auth,public,storage to anon,authenticated;
    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);

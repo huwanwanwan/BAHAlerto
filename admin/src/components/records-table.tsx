@@ -26,6 +26,7 @@ const columnLabels: Record<string, string> = {
   observation_status: "Data status",
   publication_status: "Publication",
   full_name: "Name",
+  last_sign_in_at: "Last sign-in",
   preferred_area: "Preferred area",
   expires_at: "Expires",
   verified_at: "Last verified",

@@ -16,6 +16,7 @@ or admin-users table, and passwords exist only in Supabase Auth.
 | saved_locations | Unique profile/road bookmarks |
 | notification_preferences | One preferences row per profile; push delivery is not implemented |
 | audit_logs | Administrator change history |
+| admin_notifications | Per-administrator activity notifications and unread state (migration 005) |
 
 `supabase/migrations/20261029000400_shared_account_integrity.sql` is the upgrade
 for an installation with migrations 001 through 003. The owner reported applying
@@ -63,3 +64,8 @@ bucket. Files are uploaded before the report insert; a failed submission can lea
 an unreferenced private object, retained for trusted maintenance. No public photo
 URL or service-role key is used. Anonymous connectivity checks and local RLS tests
 have passed; authenticated cloud workflows require real user sign-in to verify.
+
+Migration 005 (`20261029000500_admin_notifications.sql`) is the next upgrade after
+004. It has been tested locally, but is not yet confirmed applied to hosted
+Supabase. It adds trusted Auth sign-in timestamps and the admin inbox. See the
+Admin notifications section in `README.md` for deployment and verification.
