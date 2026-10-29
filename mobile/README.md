@@ -85,3 +85,23 @@ The branded login header continues its green gradient through the status area
 with light status indicators. Artwork, copy and controls retain a separate safe
 top inset, so they cannot cover the clock, signal or battery. Leaving login
 restores the normal light status background for the inner app screens.
+
+### FlutterFrame debugger-warning overlay
+
+FlutterFrame 2.0.0 can cover a healthy preview with an error overlay when Flutter's
+Dart debug transport reports a recoverable warning. `scripts/repair-flutterframe.py`
+backs up and locally patches its warning handler and preview launch arguments; compile errors and
+other failures still show normally. This machine has the patch applied. Extension
+updates/reinstallation may replace it; the script refuses unexpected source content.
+Auto-reload is disabled to avoid reloads before the embedded app finishes starting.
+Use FlutterFrame Hot Reload manually after the app is visible, or use the existing
+Edge launch configuration for full debugger support.
+
+If FlutterFrame logs `Failed to start Dart Development Service` and remains
+blank, run `python scripts/repair-flutterframe.py` from `mobile`, then use
+VS Code **Developer: Reload Window** and start FlutterFrame again. The local,
+version-checked extension fix launches its embedded web preview with `--no-dds`.
+This bypasses DDS debugging for FlutterFrame; normal Edge/Chrome debug launch
+configurations are unchanged. The extension files are backed up before edits.
+A direct browser preview at http://localhost:8686/ can also confirm whether the
+app is rendering independently of the VS Code webview.

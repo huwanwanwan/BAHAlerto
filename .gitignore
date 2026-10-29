@@ -20,3 +20,7 @@ playwright-report/
 
 # Local mobile public Supabase configuration
 mobile/assets/backend.local.json
+
+# Local visual diagnostics and temporary unpacked animation files
+mobile/scripts/*.png
+mobile/scripts/extracted_zip/

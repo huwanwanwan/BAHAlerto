@@ -16,7 +16,7 @@
   "settings": {
     "dart.flutterSdkPath": "C:/BAHAlerto/.tools/flutter",
     "dart.flutterHotReloadOnSave": "all",
-    "flutterframe.autoReload": true,
+    "flutterframe.autoReload": false,
     "flutterframe.defaultDevice": "iPhone 15 Pro",
     "flutterframe.port": 8686
   },
