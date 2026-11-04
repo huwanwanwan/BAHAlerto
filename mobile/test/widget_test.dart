@@ -35,9 +35,13 @@ void main() {
       await tester.ensureVisible(password);
       await tester.enterText(password, 'example-password');
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byTooltip('Show password'));
+      final visibilityToggle = find.widgetWithIcon(
+        IconButton,
+        Icons.visibility_outlined,
+      );
+      await tester.ensureVisible(visibilityToggle);
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Show password'));
+      await tester.tap(visibilityToggle);
       await tester.pumpAndSettle();
       expect(find.byTooltip('Hide password'), findsOneWidget);
       expect(
@@ -53,7 +57,12 @@ void main() {
         find.widgetWithText(FilledButton, 'Log In').hitTestable(),
         findsOneWidget,
       );
-      expect(tester.takeException(), isNull);
+      final err = tester.takeException();
+      if (err != null) {
+        // ignore: avoid_print
+        print('LOGIN LAYOUT ERROR: $err');
+      }
+      expect(err, isNull);
     },
   );
   testWidgets('Skipping intro opens login rather than Home', (tester) async {
@@ -84,7 +93,12 @@ void main() {
     for (final milliseconds in [650, 650, 650, 650]) {
       await tester.pump(Duration(milliseconds: milliseconds));
       expect(find.text('Skip intro'), findsOneWidget);
-      expect(tester.takeException(), isNull);
+      final err = tester.takeException();
+      if (err != null) {
+        // ignore: avoid_print
+        print('INTRO LAYOUT ERROR: $err');
+      }
+      expect(err, isNull);
     }
     await tester.pump(const Duration(milliseconds: 700));
     // Asset decoding uses real asynchronous work; allow it to settle before
@@ -146,7 +160,12 @@ void main() {
     ]) {
       await tester.tap(find.byIcon(icon));
       await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
+      final err = tester.takeException();
+      if (err != null) {
+        // ignore: avoid_print
+        print('OVERFLOW DETAILS FOR ICON $icon: $err');
+      }
+      expect(err, isNull);
       expect(find.textContaining('Published data'), findsOneWidget);
     }
   });
@@ -180,6 +199,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Submit Report'));
     await tester.pumpAndSettle();
+    expect(find.byType(AccountScreen), findsOneWidget);
     expect(find.text('Welcome back'), findsOneWidget);
     expect(find.text('Continue as guest'), findsOneWidget);
   });

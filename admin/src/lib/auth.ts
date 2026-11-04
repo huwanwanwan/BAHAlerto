@@ -8,16 +8,17 @@ export async function administrator(permission?: string) {
     data: { user },
   } = await db.auth.getUser();
   if (!user) redirect("/login");
-  const { data, error } = await db
+  const [membership,profileResult] = await Promise.all([db
     .from("admin_memberships")
     .select("permissions,active")
     .eq("user_id", user.id)
-    .single();
-  const { data: profile } = await db
+    .single(), db
     .from("profiles")
     .select("status")
     .eq("id", user.id)
-    .single();
+    .single()]);
+  const {data,error}=membership;
+  const {data:profile}=profileResult;
   if (
     error ||
     !data?.active ||

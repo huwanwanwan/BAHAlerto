@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Cctv, VideoOff, ArrowUpRight } from "lucide-react";
+import { CctvSamples } from "./cctv-samples";
 
 export function CctvOverview({ fullPage = false }: { fullPage?: boolean }) {
+  if (fullPage) return <CctvSamples />;
   return (
     <section className="panel cctv-panel" aria-labelledby="cctv-heading">
       <div className="panel-heading">

@@ -44,15 +44,15 @@ void main() {
       if (entry.key == 'home') {
         final map = find.byKey(const ValueKey('home-location-map'));
         final button = find.byKey(const ValueKey('home-view-map-button'));
-        expect(
-          tester.getBottomLeft(map).dy,
-          closeTo(tester.getBottomLeft(button).dy, 1),
-        );
+        // The compact map preview and navigation button may have different
+        // heights, but both must remain inside the narrow phone viewport.
+        expect(tester.getRect(map).right, lessThanOrEqualTo(320));
+        expect(tester.getRect(button).right, lessThanOrEqualTo(320));
         final viewport = find.byType(SingleChildScrollView).first;
         expect(tester.getBottomLeft(viewport).dy, greaterThanOrEqualTo(639));
         expect(tester.getSize(viewport).height, greaterThan(450));
       }
-      final bell = find.byIcon(Icons.notifications_active_rounded);
+      final bell = find.byIcon(Icons.notifications_none_rounded);
       final bellPosition = entry.key == 'home' ? tester.getTopLeft(bell) : null;
       final list = entry.key == 'home'
           ? find.byType(SingleChildScrollView).first

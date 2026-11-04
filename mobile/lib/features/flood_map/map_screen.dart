@@ -4,6 +4,8 @@ import '../../core/data.dart';
 import '../../core/backend.dart';
 import '../../shared/widgets.dart';
 import '../../shared/module_page.dart';
+import '../../shared/road_map.dart';
+import '../../shared/street_view.dart';
 import '../flood_checker/checker_screen.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -17,7 +19,27 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   String query = '';
   @override
   Widget build(BuildContext context) {
-    final records = ref.watch(roadsProvider).asData?.value ?? [];
+    final roads = ref.watch(roadsProvider);
+    final records = roads.value ?? [];
+    if (records.isEmpty && roads.isLoading) {
+      return const ModulePage(
+        title: 'Flood map',
+        subtitle: 'Loading road locations...',
+        children: [LinearProgressIndicator()],
+      );
+    }
+    if (records.isEmpty && roads.hasError) {
+      return ModulePage(
+        title: 'Flood map',
+        subtitle: backendError(roads.error!),
+        children: [
+          TextButton(
+            onPressed: () => ref.invalidate(roadsProvider),
+            child: const Text('Try again'),
+          ),
+        ],
+      );
+    }
     if (records.isEmpty) {
       return const ModulePage(
         title: 'Flood map',
@@ -31,8 +53,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
     return ModulePage(
       title: 'Flood map',
-      subtitle: 'Map preview • Illustrative layout, not geographic navigation.',
+      subtitle: 'Explore roads with satellite imagery or street view.',
       children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: () => ref.invalidate(roadsProvider),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Refresh roads'),
+          ),
+        ),
         TextField(
           decoration: const InputDecoration(
             labelText: 'Search road or location',
@@ -65,73 +95,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         const SizedBox(height: 16),
         const RoadSelector(),
         const SizedBox(height: 20),
-        AspectRatio(
-          aspectRatio: 1,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: ColoredBox(
-              color: const Color(0xFFEAF5EE),
-              child: Stack(
-                children: [
-                  const Positioned(
-                    left: 80,
-                    top: 0,
-                    bottom: 0,
-                    child: ColoredBox(
-                      color: Color(0xFFBDE2C6),
-                      child: SizedBox(width: 65),
-                    ),
-                  ),
-                  const Center(
-                    child: Divider(thickness: 24, color: Colors.white),
-                  ),
-                  const Center(
-                    child: VerticalDivider(thickness: 18, color: Colors.white),
-                  ),
-                  const Positioned(
-                    top: 14,
-                    left: 14,
-                    child: Tag('Illustrative preview'),
-                  ),
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton.filled(
-                          tooltip: records[selected].road,
-                          onPressed: () =>
-                              openChecker(context, onReport: widget.onReport),
-                          iconSize: 32,
-                          icon: const Icon(
-                            Icons.location_on,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Material(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Text(
-                                records[selected].road,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: ink,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        SizedBox(
+          height: (MediaQuery.sizeOf(context).height * 0.65).clamp(
+            440.0,
+            720.0,
+          ),
+          child: RoadMap(
+            roads: records,
+            selected: selected,
+            onSelected: (index) =>
+                ref.read(selectedRoadProvider.notifier).select(index),
           ),
         ),
         const SizedBox(height: 20),
@@ -168,9 +141,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 icon: const Icon(Icons.water),
                 label: const Text('Check Flood'),
               ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: () => openStreetView(
+                  context,
+                  records[selected].latitude,
+                  records[selected].longitude,
+                ),
+                icon: const Icon(Icons.streetview),
+                label: const Text('Open Street View'),
+              ),
               const SizedBox(height: 12),
               const Text(
-                'Road positions in this layout are illustrative. Geographic navigation is not available.',
+                'Satellite images show the area, not live flood conditions.',
               ),
             ],
           ),

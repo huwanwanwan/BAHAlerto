@@ -47,6 +47,7 @@ final userProvider = Provider<User?>((ref) {
 });
 final roadsProvider = FutureProvider<List<FloodRecord>>((ref) async {
   final db = ref.watch(clientProvider);
+  refreshPeriodically(ref);
   final roads = <Map<String, dynamic>>[];
   // Page the public road directory rather than silently stopping at 1,000 rows.
   for (var start = 0; ; start += 500) {
@@ -120,11 +121,8 @@ final preferencesProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
       .eq('owner_id', user.id)
       .maybeSingle();
 });
-final directoryProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((
-      ref,
-      table,
-    ) async {
+final directoryProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, String>((ref, table) async {
       final db = ref.watch(clientProvider);
       if (table == 'flood_alerts') {
         final now = DateTime.now().toUtc();
@@ -151,6 +149,13 @@ final directoryProvider =
       }
       if (!['emergency_contacts', 'evacuation_centers'].contains(table)) {
         throw ArgumentError('Unknown directory');
+      }
+      if (table == 'evacuation_centers') {
+        final refreshTimer = Timer(
+          const Duration(seconds: 30),
+          ref.invalidateSelf,
+        );
+        ref.onDispose(refreshTimer.cancel);
       }
       return db
           .from(table)

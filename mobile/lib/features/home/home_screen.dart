@@ -28,8 +28,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final displayAddress = address != null && address.isNotEmpty
         ? address
         : 'No address saved';
-    const cardTopOffset = 146.0;
-    final headerHeight = topInset + cardTopOffset + 80;
+    final headerHeight = topInset + 230.0;
+    const cardTopOffset = 126.0;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -42,217 +42,476 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // 1. Top Green Header & Overlapping Location/Map Card
               Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: headerHeight,
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.circular(38),
-                        ),
+                  // Green curve header extending to the very top behind status bar
+                  Container(
+                    height: headerHeight,
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(38),
                       ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.asset(
-                            'assets/green-riverside-town-header.png',
-                            fit: BoxFit.cover,
-                            alignment: Alignment.topCenter,
-                            excludeFromSemantics: true,
-                            errorBuilder: (_, _, _) => const DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: loginHeaderGradient,
-                              ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          'assets/green-riverside-town-header.png',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter,
+                          excludeFromSemantics: true,
+                          errorBuilder: (_, _, _) => const DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: loginHeaderGradient,
                             ),
                           ),
-                          // Soft gradient overlay to ensure top brand readability
-                          Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0x99003822),
-                                  Color(0x33003822),
-                                  Colors.transparent,
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
+                        ),
+                        // Soft gradient overlay to ensure top brand readability
+                        Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0x99003822),
+                                Color(0x33003822),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
                             ),
                           ),
-                          Positioned(
-                            top: topInset + 72,
-                            left: 16,
-                            right: 16,
-                            child: Row(
-                              children: [
-                                const CircleAvatar(
-                                  radius: 22,
-                                  backgroundColor: Color(0xFFEAF5EE),
-                                  child: Icon(
-                                    Icons.person_outline_rounded,
-                                    color: Color(0xFF005C38),
-                                  ),
+                        ),
+                        Positioned(
+                          top: topInset + 54,
+                          left: 16,
+                          right: 16,
+                          child: Row(
+                            children: [
+                              const CircleAvatar(
+                                radius: 22,
+                                backgroundColor: Color(0xFFEAF5EE),
+                                child: Icon(
+                                  Icons.person_outline_rounded,
+                                  color: Color(0xFF005C38),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        displayName,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      displayName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.location_on_outlined,
                                           color: Colors.white,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w700,
+                                          size: 15,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            displayAddress,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Branded Header Top Bar
+                        Positioned(
+                          top: topInset + 6,
+                          left: 16,
+                          right: 16,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Logo + Two-tone BAHAlerto (matching login page)
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        padding: const EdgeInsets.all(2),
+                                        child: Image.asset(
+                                          'assets/mobile-logo.png',
+                                          fit: BoxFit.contain,
+                                          excludeFromSemantics: true,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.location_on_outlined,
+                                      const SizedBox(width: 8),
+                                      const Text.rich(
+                                        TextSpan(
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            letterSpacing: -0.6,
+                                            fontWeight: FontWeight.w900,
+                                            shadows: [
+                                              Shadow(
+                                                color: Color(0x88000000),
+                                                offset: Offset(0, 1.5),
+                                                blurRadius: 3,
+                                              ),
+                                            ],
+                                          ),
+                                          children: [
+                                            TextSpan(
+                                              text: 'BAHA',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: 'lerto',
+                                              style: TextStyle(
+                                                color: Color(0xFFF05A28),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Circular Notification Bell Button
+                              GestureDetector(
+                                onTap: () => openInfo(
+                                  context,
+                                  'Flood Advisories',
+                                  const AlertsScreen(),
+                                ),
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.35,
+                                      ),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.notifications_none_rounded,
+                                        color: Color(0xFF005C38),
+                                        size: 20,
+                                      ),
+                                      Positioned(
+                                        top: 7,
+                                        right: 8,
+                                        child: Container(
+                                          width: 7,
+                                          height: 7,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFF3B30),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 1.2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Top Location & Map Card (Overlapping the bottom curve of the green header)
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      topInset + cardTopOffset,
+                      16,
+                      0,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x18000000),
+                            blurRadius: 18,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Left Details Column
+                          Expanded(
+                            flex: 13,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Location header
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(
+                                      Icons.location_on_rounded,
+                                      color: Color(0xFF2E7D32),
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Your Location',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Color(0xFF2E7D32),
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                const Text(
+                                  '12 Jalan Ampang',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 16.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF1B3322),
+                                  ),
+                                ),
+                                const SizedBox(height: 1),
+                                const Text(
+                                  'Marilao, Bulacan',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF6B8272),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Moderate Flooding Status Pill
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE3F2FD),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 28,
+                                        height: 28,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF42A5F5),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.waves_rounded,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 7),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: const [
+                                            Text(
+                                              'Moderate Flooding',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(0xFF1565C0),
+                                              ),
+                                            ),
+                                            Text(
+                                              'Last update: Oct 29, 2026 09:30 AM',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 8.5,
+                                                color: Color(0xFF64748B),
+                                              ),
+                                            ),
+                                            Text(
+                                              'Source: LGU Marilao',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 8.5,
+                                                color: Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+
+                                // View on Map Button
+                                GestureDetector(
+                                  key: const ValueKey('home-view-map-button'),
+                                  onTap: () => widget.onNavigate?.call(1),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 7.5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0F7533),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Icon(
+                                            Icons.explore_rounded,
                                             color: Colors.white,
                                             size: 15,
                                           ),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: Text(
-                                              displayAddress,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                              ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            'View on Map',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
                                             ),
+                                          ),
+                                          SizedBox(width: 3),
+                                          Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: Colors.white,
+                                            size: 16,
                                           ),
                                         ],
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          // Branded Header Top Bar
-                          Positioned(
-                            top: topInset + 6,
-                            left: 16,
-                            right: 16,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Logo + Two-tone BAHAlerto (matching login page)
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Image.asset(
-                                              'assets/mobile-logo.png',
-                                              width: 30,
-                                              height: 30,
-                                              fit: BoxFit.contain,
-                                              excludeFromSemantics: true,
+                          const SizedBox(width: 10),
+
+                          // Right Map Preview Box
+                          Expanded(
+                            flex: 11,
+                            child: GestureDetector(
+                              key: const ValueKey('home-location-map'),
+                              onTap: () => widget.onNavigate?.call(1),
+                              child: AspectRatio(
+                                aspectRatio: 1.05,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFFE2EBE5),
+                                    ),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        Image.asset(
+                                          'assets/home-map-preview.png',
+                                          fit: BoxFit.cover,
+                                          excludeFromSemantics: true,
+                                          errorBuilder: (_, _, _) => Container(
+                                            color: const Color(0xFFE8F5E9),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.explore_rounded,
+                                                color: Color(0xFF2E7D32),
+                                                size: 32,
+                                              ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
-                                          const Text.rich(
-                                            TextSpan(
-                                              style: TextStyle(
-                                                fontSize: 22,
-                                                letterSpacing: -0.6,
-                                                fontWeight: FontWeight.w900,
-                                                shadows: [
-                                                  Shadow(
-                                                    color: Color(0x88000000),
-                                                    offset: Offset(0, 1.5),
-                                                    blurRadius: 3,
-                                                  ),
-                                                ],
+                                        ),
+                                        Positioned(
+                                          top: 6,
+                                          right: 6,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.90,
                                               ),
-                                              children: [
-                                                TextSpan(
-                                                  text: 'BAHA',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                                TextSpan(
-                                                  text: 'lerto',
-                                                  style: TextStyle(
-                                                    color: Color(0xFFF05A28),
-                                                  ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              boxShadow: const [
+                                                BoxShadow(
+                                                  color: Color(0x1A000000),
+                                                  blurRadius: 4,
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                // Circular Notification Bell Button
-                                GestureDetector(
-                                  onTap: () => openInfo(
-                                    context,
-                                    'Flood Advisories',
-                                    const AlertsScreen(),
-                                  ),
-                                  child: Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.35,
-                                        ),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        const Icon(
-                                          Icons.notifications_active_rounded,
-                                          color: Color(0xFF005C38),
-                                          size: 25,
-                                        ),
-                                        Positioned(
-                                          top: 7,
-                                          right: 8,
-                                          child: Container(
-                                            width: 7,
-                                            height: 7,
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFFF3B30),
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: Colors.white,
-                                                width: 1.2,
-                                              ),
+                                            child: const Icon(
+                                              Icons.fullscreen_rounded,
+                                              size: 17,
+                                              color: Color(0xFF2E7D32),
                                             ),
                                           ),
                                         ),
@@ -260,495 +519,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(top: topInset + cardTopOffset),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Top Location & Map Card (Overlapping the bottom curve of the green header)
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x18000000),
-                                  blurRadius: 18,
-                                  offset: Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(14),
-                            child: IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // Left Details Column
-                                  Expanded(
-                                    flex: 13,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Location header
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: const [
-                                            Icon(
-                                              Icons.location_on_rounded,
-                                              color: Color(0xFF2E7D32),
-                                              size: 16,
-                                            ),
-                                            SizedBox(width: 4),
-                                            Flexible(
-                                              child: Text(
-                                                'Your Location',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: Color(0xFF2E7D32),
-                                                  fontSize: 12.5,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 3),
-                                        const Text(
-                                          '12 Ibayo, Manzano',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 16.5,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFF1B3322),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 1),
-                                        const Text(
-                                          'Marilao, Bulacan',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF6B8272),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-
-                                        // Moderate Flooding Status Pill
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFE3F2FD),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                width: 28,
-                                                height: 28,
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFF42A5F5),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.waves_rounded,
-                                                  color: Colors.white,
-                                                  size: 16,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 7),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: const [
-                                                    Text(
-                                                      'Moderate Flooding',
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 11.5,
-                                                        fontWeight:
-                                                            FontWeight.w800,
-                                                        color: Color(
-                                                          0xFF1565C0,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      'Last update: Oct 29, 2026 09:30 AM',
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 8.5,
-                                                        color: Color(
-                                                          0xFF64748B,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      'Source: LGU Marilao',
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 8.5,
-                                                        color: Color(
-                                                          0xFF64748B,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-
-                                        // View on Map Button
-                                        GestureDetector(
-                                          key: const ValueKey(
-                                            'home-view-map-button',
-                                          ),
-                                          onTap: () =>
-                                              widget.onNavigate?.call(1),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 7.5,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF0F7533),
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: FittedBox(
-                                              fit: BoxFit.scaleDown,
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: const [
-                                                  Icon(
-                                                    Icons.explore_rounded,
-                                                    color: Colors.white,
-                                                    size: 15,
-                                                  ),
-                                                  SizedBox(width: 5),
-                                                  Text(
-                                                    'View on Map',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 3),
-                                                  Icon(
-                                                    Icons.chevron_right_rounded,
-                                                    color: Colors.white,
-                                                    size: 16,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-
-                                  // Right Map Preview Box
-                                  Expanded(
-                                    flex: 11,
-                                    child: GestureDetector(
-                                      onTap: () => widget.onNavigate?.call(1),
-                                      child: SizedBox.expand(
-                                        key: const ValueKey(
-                                          'home-location-map',
-                                        ),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                            border: Border.all(
-                                              color: const Color(0xFFE2EBE5),
-                                            ),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              15,
-                                            ),
-                                            child: Stack(
-                                              fit: StackFit.expand,
-                                              children: [
-                                                Image.asset(
-                                                  'assets/home-map-preview.png',
-                                                  fit: BoxFit.cover,
-                                                  excludeFromSemantics: true,
-                                                  errorBuilder: (_, _, _) =>
-                                                      Container(
-                                                        color: const Color(
-                                                          0xFFE8F5E9,
-                                                        ),
-                                                        child: const Center(
-                                                          child: Icon(
-                                                            Icons
-                                                                .explore_rounded,
-                                                            color: Color(
-                                                              0xFF2E7D32,
-                                                            ),
-                                                            size: 32,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                ),
-                                                Positioned(
-                                                  top: 6,
-                                                  right: 6,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(4),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white
-                                                          .withValues(
-                                                            alpha: 0.90,
-                                                          ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                      boxShadow: const [
-                                                        BoxShadow(
-                                                          color: Color(
-                                                            0x1A000000,
-                                                          ),
-                                                          blurRadius: 4,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: const Icon(
-                                                      Icons.fullscreen_rounded,
-                                                      size: 17,
-                                                      color: Color(0xFF2E7D32),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
 
               const SizedBox(height: 18),
-
-              // 3. Quick Actions Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Quick Actions',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF1B3322),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => widget.onNavigate?.call(2),
-                      child: const Text(
-                        'See All >',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF2E7D32),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // Quick Action Tiles (Check Flood, Report Flood, Share Location, Emergency SOS)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _ActionTile(
-                        icon: Icons.map_rounded,
-                        iconColor: const Color(0xFF2E7D32),
-                        bgColor: const Color(0xFFE8F5E9),
-                        label: 'Check\nFlood',
-                        onTap: () => widget.onNavigate?.call(2),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _ActionTile(
-                        icon: Icons.camera_alt_rounded,
-                        iconColor: const Color(0xFF0288D1),
-                        bgColor: const Color(0xFFE1F5FE),
-                        label: 'Report\nFlood',
-                        onTap: () => widget.onNavigate?.call(3),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _ActionTile(
-                        icon: Icons.navigation_rounded,
-                        iconColor: const Color(0xFFEF6C00),
-                        bgColor: const Color(0xFFFFF3E0),
-                        label: 'Share\nLocation',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Location coordinates shared: Marilao, Bulacan',
-                              ),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _ActionTile(
-                        icon: Icons.emergency_rounded,
-                        iconColor: const Color(0xFFD32F2F),
-                        bgColor: const Color(0xFFFFEBEE),
-                        label: 'Emergency\nSOS',
-                        onTap: () => openInfo(
-                          context,
-                          'Emergency Contacts',
-                          const EvacuationScreen(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // 5. Nearby Flood Reports Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Nearby Flood Reports',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF1B3322),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => widget.onNavigate?.call(2),
-                      child: const Text(
-                        'View More >',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF2E7D32),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _FloodReportCard(
-                        imagePath: 'assets/flood-street-ph-1.png',
-                        status: 'Verified',
-                        statusColor: const Color(0xFF1976D2),
-                        statusBgColor: const Color(0xFFE3F2FD),
-                        road: 'Tambubong Road',
-                        area: 'Marilao, Bulacan',
-                        depth: 'Knee level',
-                        time: '2 hours ago',
-                        onTap: () => widget.onNavigate?.call(2),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _FloodReportCard(
-                        imagePath: 'assets/flood-street-ph-2.png',
-                        status: 'Pending',
-                        statusColor: const Color(0xFFF57C00),
-                        statusBgColor: const Color(0xFFFFF3E0),
-                        road: 'Loma de Gato',
-                        area: 'Marilao, Bulacan',
-                        depth: 'Ankle level',
-                        time: '5 hours ago',
-                        onTap: () => widget.onNavigate?.call(2),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
 
               // 2. Vehicle Passability Section
               Padding(
@@ -860,6 +641,105 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               const SizedBox(height: 20),
 
+              // 3. Quick Actions Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Quick Actions',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1B3322),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => widget.onNavigate?.call(2),
+                      child: const Text(
+                        'See All >',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2E7D32),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Quick Action Tiles (Check Flood, Report Flood, Share Location, Emergency SOS)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _ActionTile(
+                        icon: Icons.map_rounded,
+                        iconColor: const Color(0xFF2E7D32),
+                        bgColor: const Color(0xFFE8F5E9),
+                        label: 'Check\nFlood',
+                        onTap: () => widget.onNavigate?.call(2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _ActionTile(
+                        icon: Icons.camera_alt_rounded,
+                        iconColor: const Color(0xFF0288D1),
+                        bgColor: const Color(0xFFE1F5FE),
+                        label: 'Report\nFlood',
+                        onTap: () => widget.onNavigate?.call(2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _ActionTile(
+                        icon: Icons.navigation_rounded,
+                        iconColor: const Color(0xFFEF6C00),
+                        bgColor: const Color(0xFFFFF3E0),
+                        label: 'Share\nLocation',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Location coordinates shared: Marilao, Bulacan',
+                              ),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _ActionTile(
+                        icon: Icons.emergency_rounded,
+                        iconColor: const Color(0xFFD32F2F),
+                        bgColor: const Color(0xFFFFEBEE),
+                        label: 'Emergency\nSOS',
+                        onTap: () => openInfo(
+                          context,
+                          'Emergency Contacts',
+                          const EvacuationScreen(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
               // 4. Active Alerts & Advisories Section (Premium, human-crafted emergency design)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -933,9 +813,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Advisory badges wrap on narrow screens.
+                        // Top Badges Row
                         Wrap(
-                          spacing: 10,
+                          spacing: 8,
                           runSpacing: 8,
                           children: [
                             Container(
@@ -950,21 +830,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   color: const Color(0xFFFFCDD2),
                                 ),
                               ),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFD32F2F),
-                                        shape: BoxShape.circle,
-                                      ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFD32F2F),
+                                      shape: BoxShape.circle,
                                     ),
-                                    const SizedBox(width: 5),
-                                    const Text(
+                                  ),
+                                  const SizedBox(width: 5),
+                                  const Flexible(
+                                    child: Text(
                                       'ACTIVE FLOOD ADVISORY',
                                       style: TextStyle(
                                         color: Color(0xFFC62828),
@@ -973,8 +852,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         letterSpacing: 0.5,
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                             Container(
@@ -1140,6 +1019,78 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
 
               const SizedBox(height: 20),
+
+              // 5. Nearby Flood Reports Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Nearby Flood Reports',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1B3322),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => widget.onNavigate?.call(2),
+                      child: const Text(
+                        'View More >',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2E7D32),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Two Flood Report Cards Side by Side
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _FloodReportCard(
+                        imagePath: 'assets/flood-report-1.png',
+                        status: 'Verified',
+                        statusColor: const Color(0xFF1976D2),
+                        statusBgColor: const Color(0xFFE3F2FD),
+                        road: 'Tambubong Road',
+                        area: 'Marilao, Bulacan',
+                        depth: 'Knee level',
+                        time: '2 hours ago',
+                        onTap: () => widget.onNavigate?.call(2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _FloodReportCard(
+                        imagePath: 'assets/flood-report-2.png',
+                        status: 'Pending',
+                        statusColor: const Color(0xFFF57C00),
+                        statusBgColor: const Color(0xFFFFF3E0),
+                        road: 'Loma de Gato',
+                        area: 'Marilao, Bulacan',
+                        depth: 'Ankle level',
+                        time: '5 hours ago',
+                        onTap: () => widget.onNavigate?.call(2),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               // Published data disclosure footer
               const Padding(
@@ -1338,98 +1289,128 @@ class _FloodReportCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(18),
-    child: Semantics(
-      label: "$road, $status, $depth, $time",
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        clipBehavior: Clip.antiAlias,
+        padding: const EdgeInsets.all(9),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE0EAE2)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE9F0E7)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x06000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Row(
           children: [
-            AspectRatio(
-              aspectRatio: 2.2,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(
-                    imagePath,
-                    fit: BoxFit.cover,
-                    alignment: const Alignment(0, 0.15),
-                    cacheWidth: 700,
-                    semanticLabel:
-                        'AI-generated illustration of a flooded Philippine street',
-                    errorBuilder: (_, _, _) => const ColoredBox(
-                      color: Color(0xFFE8F5E9),
-                      child: Center(
-                        child: Icon(
-                          Icons.water_rounded,
-                          color: Color(0xFF2E7D32),
-                        ),
-                      ),
-                    ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                imagePath,
+                width: 52,
+                height: 52,
+                fit: BoxFit.cover,
+                excludeFromSemantics: true,
+                errorBuilder: (_, _, _) => Container(
+                  width: 52,
+                  height: 52,
+                  color: const Color(0xFFE8F5E9),
+                  child: const Icon(
+                    Icons.water_rounded,
+                    color: Color(0xFF2E7D32),
                   ),
-                ],
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
+            const SizedBox(width: 8),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 5,
+                      vertical: 1.5,
                     ),
                     decoration: BoxDecoration(
                       color: statusBgColor,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
                       status,
                       style: TextStyle(
                         color: statusColor,
-                        fontSize: 11,
+                        fontSize: 9,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 3),
                   Text(
                     road,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1B3322),
                     ),
                   ),
-                  const SizedBox(height: 4),
                   Text(
                     area,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
+                      fontSize: 10,
                       color: Color(0xFF6B8272),
-                      fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 6,
+                  const SizedBox(height: 2),
+                  Row(
                     children: [
-                      Text(
-                        depth,
-                        style: const TextStyle(
-                          color: Color(0xFF1976D2),
-                          fontWeight: FontWeight.w600,
+                      const Icon(
+                        Icons.water_drop_rounded,
+                        color: Color(0xFF1976D2),
+                        size: 11,
+                      ),
+                      const SizedBox(width: 2),
+                      Expanded(
+                        child: Text(
+                          depth,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1976D2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time_rounded,
+                        color: Color(0xFF88A090),
+                        size: 10,
+                      ),
+                      const SizedBox(width: 2),
+                      Expanded(
+                        child: Text(
+                          time,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 8.5,
+                            color: Color(0xFF88A090),
+                          ),
                         ),
                       ),
                     ],
@@ -1437,11 +1418,16 @@ class _FloodReportCard extends StatelessWidget {
                 ],
               ),
             ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFFB0C0B7),
+              size: 16,
+            ),
           ],
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 void openInfo(BuildContext context, String title, Widget body) {

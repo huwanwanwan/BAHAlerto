@@ -8,7 +8,7 @@ export default async function CctvPage() {
         <div>
           <span className="eyebrow">BAHALERTO WORKSPACE</span>
           <h1>Manage CCTV</h1>
-          <p>Camera views for supported monitoring locations.</p>
+          <p>Prerecorded Philippine flood footage for sample viewing.</p>
         </div>
       </div>
       <CctvOverview fullPage />

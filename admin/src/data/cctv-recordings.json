@@ -1,0 +1,28 @@
+[
+  {
+    "id": "hereford-1",
+    "title": "Hereford Street flood recording 1",
+    "location": "Project 8, Quezon City, Philippines",
+    "recordedDate": "2009-09-26",
+    "src": "/sample-footage/hereford-flood-1.webm",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File%3AFlooding_in_Hereford_Street%2C_Project_8%2C_Quezon_City%2C_Philippines_from_Typhoon_Ketsana_(Ondoy)_1.webm",
+    "author": "Exec8",
+    "authorUrl": "https://commons.wikimedia.org/wiki/User:Exec8",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "note": "Original neighborhood flood footage, not a confirmed CCTV camera. Wikimedia-provided 480p derivative; no editorial changes."
+  },
+  {
+    "id": "hereford-2",
+    "title": "Hereford Street flood recording 2",
+    "location": "Project 8, Quezon City, Philippines",
+    "recordedDate": "2009-09-26",
+    "src": "/sample-footage/hereford-flood-2.webm",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File%3AFlooding_in_Hereford_Street%2C_Project_8%2C_Quezon_City%2C_Philippines_from_Typhoon_Ketsana_(Ondoy)_2.webm",
+    "author": "Exec8",
+    "authorUrl": "https://commons.wikimedia.org/wiki/User:Exec8",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "note": "Original neighborhood flood footage, not a confirmed CCTV camera. Wikimedia-provided 480p derivative; no editorial changes."
+  }
+]

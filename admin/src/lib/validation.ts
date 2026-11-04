@@ -9,6 +9,12 @@ export const capability: Record<string, string> = {
   user: "users",
 };
 const common = { id: z.union([z.uuid(), z.literal("")]).optional() };
+export const centerInputSchema = z.object({
+  ...common,
+  kind: z.literal("center"), name: text, address: text, contact: text,
+  operational_details: text, verified_at: text,
+  published: z.enum(["true", "false"]), archived: z.enum(["true", "false"]),
+});
 export const saveSchema = z.discriminatedUnion("kind", [
   z.object({
     ...common,
@@ -67,18 +73,9 @@ export const saveSchema = z.discriminatedUnion("kind", [
     published: z.enum(["true", "false"]),
     archived: z.enum(["true", "false"]),
   }),
-  z.object({
-    ...common,
-    kind: z.literal("center"),
-    name: text,
-    address: text,
+  centerInputSchema.extend({
     latitude: z.coerce.number().min(-90).max(90),
     longitude: z.coerce.number().min(-180).max(180),
-    contact: text,
-    operational_details: text,
-    verified_at: text,
-    published: z.enum(["true", "false"]),
-    archived: z.enum(["true", "false"]),
   }),
   z.object({
     kind: z.literal("user"),

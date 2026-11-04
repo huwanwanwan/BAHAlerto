@@ -3,10 +3,13 @@ import { useActionState, useState } from "react";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { login, forgot, changePassword, type ActionState } from "@/app/actions";
 import { Button } from "./ui/button";
+import { GoogleAuthButton } from "./google-auth-button";
 export function LoginForm({
   mode = "login",
+  googleMessage,
 }: {
   mode?: "login" | "recovery" | "password";
+  googleMessage?: string;
 }) {
   const [show, setShow] = useState(false);
   const [state, action, pending] = useActionState<ActionState, FormData>(
@@ -14,6 +17,7 @@ export function LoginForm({
     {},
   );
   return (
+    <>
     <form
       action={action}
       className={mode === "login" ? "form-stack portal-form" : "form-stack"}
@@ -85,5 +89,11 @@ export function LoginForm({
         {mode !== "login" && <ArrowRight size={17} />}
       </Button>
     </form>
+    {mode === "login" && <>
+      {googleMessage && <p className="error-message" role="alert">{googleMessage}</p>}
+      <div className="google-auth-divider"><span>or</span></div>
+      <GoogleAuthButton mode="login"/>
+    </>}
+    </>
   );
 }

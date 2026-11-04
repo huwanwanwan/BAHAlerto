@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
+import { sampleLocations, samplePayloads } from "../src/lib/sample-locations";
 test("database migrations enforce role, review, publication and audit rules", async () => {
   const db = new PGlite();
   try {
@@ -79,6 +80,9 @@ test("database migrations enforce role, review, publication and audit rules", as
     );
     await as("authenticated", admin);
     assert.equal((await db.query(`select id from public.admin_notifications where kind='report_submitted' and record_id='${report}'`)).rows.length, 1);
+    const submitted = await db.query<{status:string;depth_cm:number}>(`select status,depth_cm from public.flood_reports where id='${report}'`);
+    assert.equal(submitted.rows[0].status, "pending");
+    assert.equal(Number(submitted.rows[0].depth_cm), 45);
     await as("authenticated", admin);
     await assert.rejects(
       db.exec(`select public.review_flood_report('${report}','rejected','')`),
@@ -89,6 +93,11 @@ test("database migrations enforce role, review, publication and audit rules", as
     await db.exec(
       `select public.review_flood_report('${report}','verified','Evidence reviewed as community estimate')`,
     );
+    await as("authenticated", user);
+    const mobileReview = await db.query<{status:string;review_reason:string}>(`select status,review_reason from public.flood_reports where id='${report}' and owner_id='${user}'`);
+    assert.deepEqual(mobileReview.rows[0], {status:"verified",review_reason:"Evidence reviewed as community estimate"});
+    await as("authenticated", admin);
+    assert.equal((await db.query(`select id from public.flood_observations where supporting_report_id='${report}'`)).rows.length, 0);
     await assert.rejects(
       db.exec(
         `select public.review_flood_report('${report}','verified','Duplicate approval must fail')`,
@@ -232,6 +241,21 @@ test("database migrations enforce role, review, publication and audit rules", as
         `insert into public.flood_reports(road_id,latitude,longitude,depth_cm,description,observed_at) values('${road}',14,120,45,'Suspended submission test',now())`,
       ),
     );
+    // The approved demonstration import uses the same audited save and public
+    // read functions as the admin and mobile app, and is safe to repeat.
+    await as("authenticated", admin);
+    for(let repeat=0;repeat<2;repeat++)for(const sample of sampleLocations){
+      const payload=samplePayloads(sample);
+      await db.query("select public.admin_save_record($1,$2::jsonb)",["road",JSON.stringify(payload.road)]);
+      await db.query("select public.admin_save_record($1,$2::jsonb)",["observation",JSON.stringify(payload.observation)]);
+    }
+    await as("anon", "");
+    assert.equal((await db.query("select id from public.road_locations where name like '[SAMPLE]%' and published")).rows.length,10);
+    for(const sample of sampleLocations){
+      const mobile=await db.query<{depth_cm:number;source:string;notes:string}>("select depth_cm,source,notes from public.latest_road_observation($1)",[sample.id]);
+      assert.equal(mobile.rows.length,1);assert.equal(Number(mobile.rows[0].depth_cm),sample.depth);
+      assert.match(mobile.rows[0].source,/SAMPLE ONLY/);assert.match(mobile.rows[0].notes,/fictional flood conditions/);
+    }
   } finally {
     await db.close();
   }

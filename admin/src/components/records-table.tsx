@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import {
   Search,
   Inbox,
@@ -23,7 +23,9 @@ const columnLabels: Record<string, string> = {
   depth_cm: "Depth",
   created_at: "Submitted",
   observed_at: "Observed",
+  valid_until: "Valid until",
   observation_status: "Data status",
+  flood_signal: "Flood signal",
   publication_status: "Publication",
   full_name: "Name",
   last_sign_in_at: "Last sign-in",
@@ -64,6 +66,7 @@ function cellValue(row: RecordRow, column: string): unknown {
   return row[column];
 }
 function TableCell({ row, column }: { row: RecordRow; column: string }) {
+  if (column === "flood_signal") return <span className={`road-signal-badge signal-${String(row.flood_signal ?? "unknown")}`}><i />{String(row.signal_label ?? "No current flood data")}{row.flood_depth == null ? "" : ` · ${row.flood_depth} cm`}</span>;
   if (column === "table_name")
     return (
       <>
@@ -108,13 +111,7 @@ function TableCell({ row, column }: { row: RecordRow; column: string }) {
     );
   if (column === "observation_status")
     return (
-      <div className="table-status-stack">
-        <span className={"badge " + display(row.verification_status)}>
-          {display(row.verification_status)}
-        </span>
-        <span>{display(row.freshness)}</span>
-        <small>{publicationStatus(row)}</small>
-      </div>
+      <span className={"badge " + observationStatus(row)}>{({current:"Current",outdated:"Expired",unverified:"Unverified",historical:"Historical",unpublished:"Hidden",archived:"Archived"} as Record<string,string>)[observationStatus(row)] ?? "Unavailable"}</span>
     );
   if (["status", "severity", "publication_status"].includes(column))
     return (
@@ -130,7 +127,7 @@ function TableCell({ row, column }: { row: RecordRow; column: string }) {
         {display(row[column])} cm
       </span>
     );
-  if (column.endsWith("_at") && row[column])
+  if ((column.endsWith("_at") || column === "valid_until") && row[column])
     return new Date(String(row[column])).toLocaleString("en-PH", {
       timeZone: "Asia/Manila",
       dateStyle: "medium",
@@ -149,7 +146,7 @@ function getColumnClass(column: string): string {
     )
   )
     return "col-status";
-  if (column.endsWith("_at") || column === "created_at") return "col-date";
+  if (column.endsWith("_at") || column === "valid_until") return "col-date";
   if (column === "depth_cm") return "col-depth";
   return "";
 }
@@ -170,7 +167,6 @@ function DeleteRecordButton({
   );
 
   const handleAction = () => {
-    const actionLabel = isArchived ? "restore" : "delete / archive";
     const confirmPrompt = isArchived
       ? `Re-activate and restore this ${kind} record?`
       : `Are you sure you want to delete/archive this ${kind} record? It will be removed from public view and saved in the audit log.`;
@@ -212,6 +208,7 @@ export function RecordsTable({
   total = rows.length,
   filters = true,
   loading = false,
+  onFilteredRowsChange,
 }: {
   rows: RecordRow[];
   columns: string[];
@@ -221,6 +218,7 @@ export function RecordsTable({
   total?: number;
   filters?: boolean;
   loading?: boolean;
+  onFilteredRowsChange?: (rows: RecordRow[]) => void;
 }) {
   const [query, setQuery] = useState(""),
     [status, setStatus] = useState("all"),
@@ -245,12 +243,14 @@ export function RecordsTable({
           : columns.includes("status")
             ? ["pending", "verified", "rejected", "clarification"]
             : [];
-  const rowStatus = (row: RecordRow) =>
-    columns.includes("publication_status")
+  const hasPublicationStatus = columns.includes("publication_status");
+  const hasObservationStatus = columns.includes("observation_status");
+  const rowStatus = useCallback((row: RecordRow) =>
+    hasPublicationStatus
       ? publicationStatus(row)
-      : columns.includes("observation_status")
+      : hasObservationStatus
         ? observationStatus(row)
-        : String(row.status ?? row.verification_status ?? "");
+        : String(row.status ?? row.verification_status ?? ""), [hasPublicationStatus,hasObservationStatus]);
   const filtered = useMemo(
     () =>
       rows.filter(
@@ -262,9 +262,10 @@ export function RecordsTable({
           (!from || String(r.created_at).slice(0, 10) >= from) &&
           (!to || String(r.created_at).slice(0, 10) <= to),
       ),
-    [rows, query, status, from, to],
+    [rows, query, status, from, to, rowStatus],
   );
   const pages = Math.max(1, Math.ceil(filtered.length / 10));
+  useEffect(() => { onFilteredRowsChange?.(filtered); }, [filtered, onFilteredRowsChange]);
   const current = Math.min(page, pages - 1);
   function exportCsv() {
     const output = [
@@ -393,7 +394,7 @@ export function RecordsTable({
                       <div className="table-row-actions">
                         {kind === "user" && (
                           <Link
-                            className="button outline button-sm"
+                            className="button outline button-sm action-details"
                             href={"/admin/users/" + row.id}
                           >
                             <Eye size={14} />

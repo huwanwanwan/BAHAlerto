@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useState, useRef, useLayoutEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useRef, useLayoutEffect, useOptimistic, useTransition } from "react";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { modules } from "@/lib/modules";
 import { AdminNotifications } from "./admin-notifications";
+import { Skeleton } from "./ui/skeleton";
 import { logout } from "@/app/actions";
 const icons = [
   LayoutDashboard,
@@ -45,13 +46,38 @@ export function Shell({
   const path = usePathname(),
     [collapsed, setCollapsed] = useState(false);
   const [newUsers, setNewUsers] = useState(0);
+  const router = useRouter();
+  const [selectedPath, selectPath] = useOptimistic(path);
+  const [isNavigating, startNavigation] = useTransition();
+  const switchingPage = selectedPath !== path;
+  const selectedTitle = modules.find(module =>
+    selectedPath === `/admin/${module.slug}` || selectedPath.startsWith(`/admin/${module.slug}/`),
+  )?.title;
+  const navigate = (href: string) => {
+    startNavigation(() => {
+      selectPath(href);
+      router.push(href);
+    });
+  };
   const navigation = useRef<HTMLElement>(null);
+  const pageContent = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const animation = pageContent.current?.animate(
+      [
+        { opacity: 0, transform: "translateY(6px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ],
+      { duration: 220, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+    );
+    return () => animation?.cancel();
+  }, [path, selectedPath]);
   useLayoutEffect(() => {
     const nav = navigation.current;
     if (!nav) return;
     let frame = 0;
     const positionIndicator = () => {
-      const active = nav.querySelector<HTMLElement>('a[aria-current="page"]');
+      const active = nav.querySelector<HTMLElement>('a[data-selected="true"]');
       if (!active) { delete nav.dataset.indicatorReady; return; }
       const box = active.getBoundingClientRect();
       const container = nav.getBoundingClientRect();
@@ -64,12 +90,13 @@ export function Shell({
     const observer = new ResizeObserver(positionIndicator);
     observer.observe(nav);
     return () => { observer.disconnect(); cancelAnimationFrame(frame); };
-  }, [path, collapsed]);
+  }, [selectedPath, collapsed]);
   return (
     <div className={collapsed ? "app collapsed" : "app"}>
       <aside id="workspace-sidebar">
         <Link
           href="/admin/dashboard"
+          onNavigate={(event) => { event.preventDefault(); navigate("/admin/dashboard"); }}
           className="brand brand-assets"
           aria-label="BAHAlerto dashboard"
         >
@@ -94,8 +121,8 @@ export function Shell({
           <span className="sidebar-active-indicator" aria-hidden="true"/>
           {[
             { label: "Workspace", slugs: ["dashboard"] },
+            { label: "Community & Safety", slugs: ["users", "alerts", "emergency"] },
             { label: "Flood Monitoring", slugs: ["reports", "levels", "roads", "cctv"] },
-            { label: "Community & Safety", slugs: ["alerts", "users", "emergency"] },
             { label: "Administration", slugs: ["analytics", "settings"] },
           ].map(group => <section className="nav-section" key={group.label} aria-label={group.label}>
             <h2 className="nav-caption nav-label">{group.label}</h2>
@@ -103,8 +130,10 @@ export function Shell({
               const index = modules.findIndex(module => module.slug === slug);
               const item = modules[index];
               const Icon = icons[index];
-              const active = path === `/admin/${slug}` || path.startsWith(`/admin/${slug}/`);
-              return <Link prefetch key={slug} title={item.title} href={`/admin/${slug}`} className={active ? "active" : ""} aria-current={active ? "page" : undefined}>
+              const href = `/admin/${slug}`;
+              const active = selectedPath === href || selectedPath.startsWith(`${href}/`);
+              const current = path === href || path.startsWith(`${href}/`);
+              return <Link prefetch key={slug} title={item.title} href={href} onNavigate={(event) => { event.preventDefault(); navigate(href); }} className={active ? "active" : ""} data-selected={active} aria-current={current ? "page" : undefined}>
                 <Icon size={21}/><span className="nav-label">{item.title}</span>
                 {slug === "users" && newUsers > 0 && <span className="nav-unread-count" aria-label={`${newUsers} unread user registrations`}>{newUsers > 99 ? "99+" : newUsers}</span>}
               </Link>;
@@ -133,8 +162,8 @@ export function Shell({
           <div className="header-location" aria-label="Current page">
             <span className="header-brand-title">BAHAlerto</span>
             <ChevronRight className="header-page-arrow" size={20} aria-hidden="true" />
-            <span className="header-current-page" title={modules.find(m => path === `/admin/${m.slug}` || path.startsWith(`/admin/${m.slug}/`))?.title}>
-              {modules.find(m => path === `/admin/${m.slug}` || path.startsWith(`/admin/${m.slug}/`))?.title}
+            <span className="header-current-page" title={selectedTitle}>
+              {selectedTitle}
             </span>
           </div>
           <div className="header-right">
@@ -156,7 +185,19 @@ export function Shell({
               </Link>
             </div>
           )}
-          {children}
+          {isNavigating && <div className="navigation-progress" role="status">Loading page…</div>}
+          <div ref={pageContent} className="route-content" aria-busy={isNavigating}>
+            {switchingPage && (
+              <div className="skeleton-page-container">
+                <div className="page-heading"><h1>{selectedTitle}</h1></div>
+                <section className="panel" aria-label={`Loading ${selectedTitle ?? "page"}`}>
+                  <Skeleton variant="text" className="w-48 h-6 mb-2" />
+                  <Skeleton variant="rounded" className="w-full h-48" />
+                </section>
+              </div>
+            )}
+            <div hidden={switchingPage}>{children}</div>
+          </div>
         </main>
         <footer>
           BAHAlerto | Administrator platform{" "}

@@ -10,34 +10,59 @@ import {
 } from "lucide-react";
 import { modules, permissions, type RecordRow } from "@/lib/modules";
 import { administrator } from "@/lib/auth";
-import { records } from "@/lib/data";
+import { records, roadsWithSignals, allRecords } from "@/lib/data";
 import { configured, database } from "@/lib/supabase";
 import { RecordsTable } from "@/components/records-table";
 import { RecordForm } from "@/components/record-form";
 import { Trends } from "@/components/charts";
-import { LocationMap, type MapPoint } from "@/components/location-map";
-import { AnalyticsPanel } from "@/components/analytics-panel";
+import { LocationMap } from "@/components/location-map";
+import { AnalyticsWorkspace } from "@/components/analytics-workspace";
 import { CctvOverview } from "@/components/cctv-overview";
-import { LoginForm } from "@/components/login-form";
+import { SettingsWorkspace } from "@/components/settings-workspace";
+import { EmergencyWorkspace } from "@/components/emergency-workspace";
+import { FloodLevelsWorkspace } from "@/components/flood-levels-workspace";
+import { RouteRefresh } from "@/components/route-refresh";
+import { RoadsWorkspace } from "@/components/roads-workspace";
 export default async function Module({
   params,
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; google?: string }>;
 }) {
   const { module } = await params;
   const spec = modules.find((m) => m.slug === module);
   if (!spec) notFound();
-  const { tab } = await searchParams;
+  const { tab, google } = await searchParams;
   const isAudit = module === "analytics" && tab === "audit";
   const admin = await administrator(isAudit ? "audit" : permissions[module]);
   const connected = configured();
+  if (module === "cctv") return <><div className="page-heading"><div><span className="eyebrow">VISUAL MONITORING</span><h1>Manage CCTV</h1><p>Recorded Philippine flood footage for sample viewing.</p></div></div><CctvOverview fullPage/></>;
+  if (module === "settings") return <SettingsWorkspace connected={connected} googleStatus={google} />;
+  if (module === "analytics") {
+    const canAudit=admin?.permissions.includes("audit")??!connected;
+    const canAnalytics=admin?.permissions.includes("analytics")??!connected;
+    const empty={rows:[] as RecordRow[],total:0,error:null};
+    const [reports,audit]=await Promise.all([canAnalytics?allRecords("flood_reports"):Promise.resolve(empty),canAudit?allRecords("audit_logs"):Promise.resolve(empty)]);
+    return <AnalyticsWorkspace reports={reports.rows} audit={audit.rows} reportError={reports.error} auditError={audit.error} canAudit={canAudit} canAnalytics={canAnalytics} initialTab={isAudit?"audit":"analytics"}/>;
+  }
+  if (module === "emergency") {
+    const [contacts, centers] = await Promise.all([
+      records("emergency_contacts"), records("evacuation_centers"),
+    ]);
+    return <EmergencyWorkspace contacts={contacts} centers={centers} connected={connected} initialTab={tab === "centers" ? "centers" : "contacts"} />;
+  }
+  if (module === "levels") {
+    const levels = await records("flood_observations");
+    return <FloodLevelsWorkspace {...levels} connected={connected} />;
+  }
+  if (module === "roads") {
+    const roads = await roadsWithSignals();
+    return <RoadsWorkspace {...roads} connected={connected} canSamples={!!admin?.permissions.includes("roads")&&!!admin.permissions.includes("observations")} />;
+  }
   const table = isAudit
     ? "audit_logs"
-    : module === "emergency" && tab === "centers"
-      ? "evacuation_centers"
-      : spec.table;
+    : spec.table;
   const result = table
     ? await records(table)
     : { rows: [] as RecordRow[], total: 0, error: null };
@@ -53,15 +78,6 @@ export default async function Module({
   const trend = [...trendCounts]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, reports]) => ({ date, reports }));
-  const points: MapPoint[] = result.rows
-    .filter((r) => r.latitude != null && r.longitude != null)
-    .map((r) => ({
-      id: r.id,
-      name: String(r.name ?? r.id),
-      latitude: Number(r.latitude),
-      longitude: Number(r.longitude),
-      status: String(r.status ?? "location"),
-    }));
   const cards = [
     {
       label: "Registered users",
@@ -147,6 +163,7 @@ export default async function Module({
   };
   return (
     <>
+      {module === "reports" && <RouteRefresh />}
       <div className="page-heading">
         <div>
           <span className="eyebrow">BAHALERTO WORKSPACE</span>
@@ -255,113 +272,6 @@ export default async function Module({
         </>
       ) : (
         <>
-          {module === "emergency" && (
-            <div className="tabs">
-              <Link
-                className={tab !== "centers" ? "selected" : ""}
-                href="/admin/emergency"
-              >
-                Emergency Contacts
-              </Link>
-              <Link
-                className={tab === "centers" ? "selected" : ""}
-                href="/admin/emergency?tab=centers"
-              >
-                Evacuation Centers
-              </Link>
-            </div>
-          )}
-          {module === "roads" && (
-            <section className="panel">
-              <LocationMap points={points} />
-            </section>
-          )}
-          {module === "analytics" && (
-            <>
-              <div className="tabs" aria-label="Reports and analytics sections">
-                <Link
-                  className={!isAudit ? "selected" : ""}
-                  href="/admin/analytics"
-                >
-                  Reports &amp; Analytics
-                </Link>
-                <Link
-                  className={isAudit ? "selected" : ""}
-                  href="/admin/analytics?tab=audit"
-                >
-                  Audit Logs
-                </Link>
-              </div>
-              {isAudit ? (
-                <section className="panel">
-                  <div className="panel-heading">
-                    <div>
-                      <h2>Audit Logs</h2>
-                      <p>
-                        Read-only administrator activity. Entries cannot be
-                        edited or deleted.
-                      </p>
-                    </div>
-                  </div>
-                  <RecordsTable
-                    rows={result.rows}
-                    total={result.total}
-                    columns={[
-                      "action",
-                      "table_name",
-                      "occurred_at",
-                      "audit_context",
-                    ]}
-                  />
-                </section>
-              ) : (
-                <AnalyticsPanel rows={result.rows} total={result.total} />
-              )}
-            </>
-          )}
-          {module === "settings" && (
-            <div className="dashboard-grid">
-              <section className="panel">
-                <h2>Administrator account</h2>
-                <p>
-                  {admin?.email ?? "No authenticated session in setup mode."}
-                </p>
-                {connected ? (
-                  <LoginForm mode="password" />
-                ) : (
-                  <p>Connect Supabase to enable password changes.</p>
-                )}
-              </section>
-              <section className="panel">
-                <h2>Connection checklist</h2>
-                <ol>
-                  <li>Review existing Supabase schema.</li>
-                  <li>Review both proposed SQL migrations.</li>
-                  <li>Configure the shared project URL and publishable key.</li>
-                  <li>
-                    Assign least-privilege administrator permissions through
-                    trusted SQL.
-                  </li>
-                  <li>Run allow/deny RLS tests before production.</li>
-                </ol>
-                <p>No service-role credential belongs in this app.</p>
-                <p>Personalized notification delivery is not configured.</p>
-              </section>
-            </div>
-          )}
-          {module === "levels" && (
-            <div className="notice">
-              No depth means unavailable information. Use observation time and
-              expiry to assess freshness. Archived, historical and stale records
-              are not current flood measurements.
-            </div>
-          )}
-          {module === "emergency" && (
-            <div className="notice">
-              Do not claim operational status or capacity without a recently
-              verified update. Archive records that can no longer be maintained.
-            </div>
-          )}
           {module !== "analytics" && module !== "settings" && (
             <section className="panel">
               <div className="panel-heading">

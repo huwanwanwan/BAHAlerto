@@ -150,7 +150,17 @@ function FloodTrack({ cards }: { cards: (typeof allCards)[number][] }) {
   );
 }
 
-export default function Login() {
+export default async function Login({
+  searchParams,
+}: {
+  searchParams: Promise<{ google?: string }>;
+}) {
+  const { google } = await searchParams;
+  const googleMessage = google === "unauthorized"
+    ? "This Google account does not have active administrator access."
+    : google === "error"
+      ? "Google sign-in failed or was cancelled. Check the provider configuration and try again."
+      : undefined;
   return (
     <main className="login-portal">
       {/* Tilted Philippine flood photo collage with seamless infinite scroll */}
@@ -195,7 +205,7 @@ export default function Login() {
           </div>
           <div className="portal-content">
             <h1 id="login-title">Login Portal</h1>
-            <LoginForm />
+            <LoginForm googleMessage={googleMessage}/>
             <p className="portal-recovery">
               Forgot your password?{" "}
               <Link href="/forgot-password">Reset it here</Link>

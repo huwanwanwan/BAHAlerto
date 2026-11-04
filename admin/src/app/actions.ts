@@ -5,6 +5,48 @@ import { database, configured } from "@/lib/supabase";
 import { requireWrite } from "@/lib/auth";
 import { z } from "zod";
 export type ActionState = { error?: string; success?: string };
+function siteOrigin() {
+  const origin = process.env.NEXT_PUBLIC_SITE_URL;
+  return origin ? origin.replace(/\/$/, "") : null;
+}
+export async function signInWithGoogle(
+  _: ActionState,
+  _form: FormData,
+): Promise<ActionState> {
+  void _;
+  void _form;
+  if (!configured()) return { error: "Supabase is not configured." };
+  const origin = siteOrigin();
+  if (!origin) return { error: "Configure the trusted site URL first." };
+  const db = await database();
+  const { data, error } = await db.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${origin}/auth/google/callback` },
+  });
+  if (error || !data.url)
+    return { error: "Google sign-in could not start. Check the Supabase Google provider configuration." };
+  redirect(data.url);
+}
+export async function linkGoogleAccount(
+  _: ActionState,
+  _form: FormData,
+): Promise<ActionState> {
+  void _;
+  void _form;
+  await requireWrite("account");
+  const origin = siteOrigin();
+  if (!origin) return { error: "Configure the trusted site URL first." };
+  const db = await database();
+  const { data, error } = await db.auth.linkIdentity({
+    provider: "google",
+    options: { redirectTo: `${origin}/auth/google/callback?intent=link` },
+  });
+  if (error)
+    return { error: `Google account linking failed: ${error.message}` };
+  if (!data.url)
+    return { error: "Google account linking failed: Supabase did not return an authorization URL." };
+  redirect(data.url);
+}
 export async function login(
   _: ActionState,
   form: FormData,
@@ -126,8 +168,54 @@ export async function saveRecord(
   _: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const { saveSchema, capability } = await import("@/lib/validation");
-  const parsed = saveSchema.safeParse(Object.fromEntries(form));
+  const { saveSchema, capability, centerInputSchema } = await import("@/lib/validation");
+  const input = Object.fromEntries(form);
+  if (input.kind === "observation") {
+    const observation = saveSchema.safeParse(input);
+    if (!observation.success) return { error: observation.error.issues.map(issue => issue.message).join(" ") };
+    const observationAdmin = await requireWrite("observations");
+    const { catalogueRoad } = await import("@/lib/marilao-roads");
+    const road = catalogueRoad(String(input.road_id));
+    if (road) {
+      const db = await database();
+      const existing = await db.from("road_locations").select("id").eq("id", road.id).maybeSingle();
+      if (existing.error) return { error: "The selected road could not be checked. Please try again." };
+      if (!existing.data) {
+        if (!observationAdmin.permissions.includes("roads")) return { error: "Road management permission is required to add this mapped road." };
+        const { error } = await db.rpc("admin_save_record", {kind:"road",payload:{
+          id:road.id,name:road.name,locality:road.locality,
+          latitude:road.latitude,longitude:road.longitude,published:"true",
+        }});
+        if (error) return { error: "The selected mapped road could not be added. Please try again." };
+      }
+    }
+  }
+  if (input.kind === "center") {
+    const center = centerInputSchema.safeParse(input);
+    if (!center.success) return { error: "Complete the center's name, address, contact and availability details." };
+    await requireWrite("emergency");
+    const db = await database();
+    let coordinates: { latitude: number; longitude: number } | undefined;
+    if (center.data.id) {
+      const { data: existing, error } = await db.from("evacuation_centers")
+        .select("name,address,latitude,longitude").eq("id", center.data.id).single();
+      if (error || !existing) return { error: "The center could not be loaded. Refresh and try again." };
+      if (existing.name === center.data.name && existing.address === center.data.address) {
+        coordinates = { latitude: existing.latitude, longitude: existing.longitude };
+      }
+    }
+    if (!coordinates) {
+      try {
+        const { geocodeCenter } = await import("@/lib/geocoding");
+        coordinates = await geocodeCenter(center.data.name, center.data.address);
+      } catch (error) {
+        return { error: error instanceof Error ? error.message : "Location lookup failed. Try again." };
+      }
+    }
+    input.latitude = String(coordinates.latitude);
+    input.longitude = String(coordinates.longitude);
+  }
+  const parsed = saveSchema.safeParse(input);
   if (!parsed.success)
     return { error: parsed.error.issues.map((i) => i.message).join(" ") };
   await requireWrite(capability[parsed.data.kind]);
@@ -143,6 +231,28 @@ export async function saveRecord(
     };
   revalidatePath("/admin", "layout");
   return { success: "Record saved. Audit entry recorded." };
+}
+
+export async function observationChoices() {
+  await requireWrite("observations");
+  const db = await database();
+  const [roads, reports] = await Promise.all([
+    (async () => {
+      const rows: {id:string;name:string;locality:string|null}[] = [];
+      for (let start = 0; ; start += 500) {
+        const page = await db.from("road_locations").select("id,name,locality").order("id").range(start,start+499);
+        if (page.error) throw new Error("Roads could not be loaded. Close the form and try again.");
+        rows.push(...(page.data ?? []));
+        if ((page.data?.length ?? 0) < 500) return rows;
+      }
+    })(),
+    db.from("flood_reports").select("id,road_id,depth_cm,observed_at,road_locations(name)").eq("status", "verified").order("observed_at", { ascending: false }).limit(100),
+  ]);
+  const { marilaoRoadChoices } = await import("@/lib/marilao-roads");
+  return {
+    roads: marilaoRoadChoices(roads),
+    reports: (reports.data ?? []).map(report => ({ value: report.id as string, roadId: report.road_id as string, label: `${(report.road_locations as unknown as {name: string} | null)?.name ?? "Reported road"} · ${report.depth_cm} cm · ${new Date(report.observed_at).toLocaleString("en-PH", {timeZone:"Asia/Manila"})}` })),
+  };
 }
 
 export async function deleteOrArchiveRecord(

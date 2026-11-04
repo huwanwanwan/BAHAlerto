@@ -6,6 +6,7 @@ import { database, configured } from "@/lib/supabase";
 import { display } from "@/lib/modules";
 import { ReviewForm } from "@/components/review-form";
 import { LocationMap } from "@/components/location-map";
+import { RouteRefresh } from "@/components/route-refresh";
 export default async function Report({
   params,
 }: {
@@ -36,6 +37,7 @@ export default async function Report({
     .single();
   return (
     <>
+      <RouteRefresh />
       <Link href="/admin/reports" className="text-link">
         ? All flood reports
       </Link>
