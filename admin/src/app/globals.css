@@ -367,7 +367,7 @@ main {
 }
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 .panel {
@@ -2606,7 +2606,7 @@ dialog.modal .form-stack > .button {width:100%;min-height:46px;}
 @media(prefers-reduced-motion:reduce) {.emergency-switch-indicator,.emergency-switch button {transition:none;}.emergency-tab-panel:not([hidden]) {animation:none;}}
 
 .flood-level-form-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
-.workspace .map-card.geographic-map {height:clamp(460px,68vh,780px);}
+.workspace .map-card.geographic-map {height:clamp(280px,40vh,420px);}
 .map-view-switch {position:absolute;top:12px;left:12px;display:flex;gap:3px;padding:4px;background:#fff;border-radius:10px;box-shadow:0 2px 8px #123a2b26;z-index:1;}
 .map-view-switch button {border:0;border-radius:7px;background:transparent;color:#526c5c;padding:9px 14px;font-size:14px;font-weight:600;}
 .map-view-switch button[aria-pressed="true"] {background:#e4f2e9;color:#08713e;}
@@ -2629,7 +2629,55 @@ dialog.modal .form-stack > .button {width:100%;min-height:46px;}
 .street-view-loading {position:absolute;inset:12px auto auto 12px;padding:8px 12px;background:white;border-radius:8px;font-size:14px;pointer-events:none;}
 .street-view-caption {padding:12px 20px;font-size:12px;margin:0;border-top:1px solid #e4ebe6;}
 @media(max-width:580px){.street-view-heading {padding:12px;}.street-view-heading h2{font-size:18px;}.street-view-heading button{padding:9px;font-size:13px;}.street-view-caption{padding:10px 12px;}}
-@media(max-width:580px){.workspace .map-card.geographic-map{height:480px;}}
+@media(max-width:580px){.workspace .map-card.geographic-map{height:300px;}}
+
+/* Keep embedded dashboard tools interactive within linked cards. */
+.stats-grid a.stat {display:block;text-decoration:none;color:inherit;}
+.stats-grid a.stat:focus-visible {outline:3px solid #078443;outline-offset:3px;}
+.dashboard-linked-panel {position:relative;}
+.dashboard-card-link::after {content:"";position:absolute;inset:0;border-radius:11px;}
+.dashboard-card-link:focus-visible::after {outline:3px solid #078443;outline-offset:3px;}
+.dashboard-linked-panel .map-card,
+.dashboard-linked-panel .table-tools,
+.dashboard-linked-panel .pagination,
+.dashboard-linked-panel .table-wrap,
+.dashboard-linked-panel table {position:relative;z-index:1;}
+.workspace .dashboard-grid {--dashboard-preview-height:clamp(280px,32vw,420px);}
+.workspace .dashboard-grid .map-card.geographic-map,
+.dashboard-grid .dashboard-camera-preview .cctv-recording {height:var(--dashboard-preview-height);aspect-ratio:auto;}
+.dashboard-grid > .panel > .panel-heading {min-height:64px;}
+.dashboard-camera-preview {position:relative;z-index:1;}
+.cctv-single-preview {max-width:960px;}
+.cctv-passive-player {pointer-events:none;}
+.dashboard-recent-reports table {min-width:0;table-layout:fixed;}
+.dashboard-recent-reports th,
+.dashboard-recent-reports td {min-width:0;max-width:none;white-space:normal;overflow-wrap:anywhere;padding:10px 8px;}
+.dashboard-recent-reports .table-row-actions {flex-wrap:wrap;}
+.dashboard-recent-reports .pagination > div {display:none;}
+.dashboard-camera-preview .cctv-native-recording {height:230px;aspect-ratio:auto;}
+.dashboard-camera-preview .cctv-sample-content {padding:12px 16px;}
+.dashboard-camera-preview .cctv-sample-content h2 {font-size:16px;}
+.workspace .stat .stat-sample-analytics {display:block;border-top:1px solid var(--line);margin-top:14px;padding-top:12px;}
+.sample-caption {display:block;font-size:12px;color:#6b7e71;line-height:1.5;}
+.stat-sample-value {display:flex;align-items:baseline;justify-content:space-between;margin-top:6px;gap:12px;}
+.stat-sample-value b {font-size:24px;color:#254333;}
+.stat-sample-value span {font-size:13px;color:#08713e;}
+.workspace .stat .stat-sample-analytics svg {display:block;width:100%;height:40px;padding:0;margin:8px 0;background:transparent;border-radius:0;}
+.community-sample-stats {display:flex;flex-wrap:wrap;gap:24px;margin:0 0 18px;padding:14px;background:#f0f7f2;border-radius:9px;}
+.community-sample-stats strong {display:block;font-size:22px;color:#254333;}
+.community-sample-stats span {font-size:12px;color:#6b7e71;}
+.workspace .stat > .stat-number-chart {display:flex;align-items:center;gap:12px;margin-top:10px;}
+.workspace .stat-number-chart strong {flex-shrink:0;font-size:36px;}
+.workspace .stat .stat-number-chart svg {width:100%;min-width:0;height:52px;padding:0;background:transparent;border-radius:0;color:#078443;}
+.dashboard-camera-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.dashboard-camera-grid .cctv-native-recording {height:auto;aspect-ratio:16/9;}
+.dashboard-camera-grid .cctv-sample-content {padding:8px;}
+.workspace .dashboard-camera-grid .cctv-sample-content h2,
+.dashboard-camera-grid .cctv-sample-content > p {display:none;}
+.dashboard-camera-grid .cctv-source-row {margin:0;gap:6px;font-size:10px;flex-wrap:wrap;}
+.dashboard-camera-grid .cctv-sample-label {font-size:8px;top:6px;left:6px;padding:3px;letter-spacing:0;}
+.dashboard-camera-grid .cctv-recorded-date {font-size:8px;top:28px;left:6px;}
+@media(max-width:420px){.dashboard-camera-grid{grid-template-columns:1fr;}}
 .flood-road-picker {display:grid;gap:10px;}
 .flood-road-count {margin:0;font-size:12px;color:#718078;}
 .flood-road-attribution {font-size:11px;color:#718078;text-decoration:underline;}

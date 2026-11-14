@@ -3,7 +3,6 @@ import { useActionState, useState } from "react";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { login, forgot, changePassword, type ActionState } from "@/app/actions";
 import { Button } from "./ui/button";
-import { GoogleAuthButton } from "./google-auth-button";
 export function LoginForm({
   mode = "login",
   googleMessage,
@@ -91,8 +90,6 @@ export function LoginForm({
     </form>
     {mode === "login" && <>
       {googleMessage && <p className="error-message" role="alert">{googleMessage}</p>}
-      <div className="google-auth-divider"><span>or</span></div>
-      <GoogleAuthButton mode="login"/>
     </>}
     </>
   );
