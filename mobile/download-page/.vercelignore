@@ -1,0 +1,5 @@
+preview-*.png
+README.md
+assets/*prompt.md
+.git
+node_modules

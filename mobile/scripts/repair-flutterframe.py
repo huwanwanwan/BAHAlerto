@@ -45,3 +45,37 @@ elif process_text.count(old_args) == 1:
     print("FlutterFrame now starts the preview with --no-dds; backup retained.")
 else:
     raise SystemExit("Unexpected FlutterFrame launch arguments; no process file changed.")
+
+# Prefer a runnable app over SDK/package pubspecs in a repository workspace.
+text = file.read_text(encoding="utf-8")
+project_marker = "// BAHAlerto: select an application entry point, not an SDK package."
+old_project = """            const pubspecs = await vscode.workspace.findFiles('**/pubspec.yaml', '**/build/**', 5);
+            if (!pubspecs.length) {
+                vscode.window.showErrorMessage('FlutterFrame: No pubspec.yaml found. Is this a Flutter project?');
+                return;
+            }
+            projectPath = vscode.Uri.joinPath(pubspecs[0], '..').fsPath;"""
+new_project = """            // BAHAlerto: select an application entry point, not an SDK package.
+            const fs = require('fs');
+            const path = require('path');
+            const candidates = folders.flatMap(folder => [folder.uri.fsPath, path.join(folder.uri.fsPath, 'mobile')]);
+            let appPath = candidates.find(candidate => fs.existsSync(path.join(candidate, 'pubspec.yaml')) && fs.existsSync(path.join(candidate, 'lib', 'main.dart')));
+            if (!appPath) {
+                const pubspecs = await vscode.workspace.findFiles('**/pubspec.yaml', '**/{build,.tools,node_modules,.dart_tool}/**', 100);
+                appPath = pubspecs.map(uri => path.dirname(uri.fsPath)).find(candidate => fs.existsSync(path.join(candidate, 'lib', 'main.dart')));
+            }
+            if (!appPath) {
+                vscode.window.showErrorMessage('FlutterFrame: No Flutter application with lib/main.dart found. Open the mobile folder.');
+                return;
+            }
+            projectPath = appPath;"""
+if project_marker in text:
+    print("FlutterFrame application-folder fix already installed.")
+elif text.count(old_project) == 1:
+    project_backup = file.with_suffix(".js.project-selection-backup")
+    if not project_backup.exists():
+        project_backup.write_bytes(file.read_bytes())
+    file.write_text(text.replace(old_project, new_project, 1), encoding="utf-8")
+    print("Patched FlutterFrame application-folder selection; backup retained.")
+else:
+    raise SystemExit("Unexpected FlutterFrame project selection; no project selection changed.")
